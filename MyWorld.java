@@ -4,4 +4,8 @@ public class MyWorld extends World {
     public MyWorld() {
         super(600, 400, 1);
     }
+    
+    public void setDungeonImage() {
+        GreenfootImage dungeonImage = new GreenfootImage ("images/dungeon.jpg");
+    }
 }
