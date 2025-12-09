@@ -1,19 +1,24 @@
-import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
+import greenfoot.*;
 
-/**
- * Write a description of class Hero here.
- * 
- * @author (your name) 
- * @version (a version number or a date)
- */
 public class Hero extends Actor
 {
-    /**
-     * Act - do whatever the Hero wants to do. This method is called whenever
-     * the 'Act' or 'Run' button gets pressed in the environment.
-     */
+    GreenfootImage idle = new GreenfootImage("images/heroFront_idle/idle0.png");
+    GreenfootImage[] idle = new GreenfootImage[8];
+    int imageIndex = 0;
     public void act()
     {
         // Add your action code here.
+    }
+    
+    public Hero() {
+        for (int i = 0; i < idle.length; i++) {
+            idle[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
+        }
+        setImage(idle[0]);
+    }
+    
+    public void animateHeroFrontIdle() {
+        setImage(idle[imageIndex]);
+        imageIndex = imageIndex + 1 % idle.length;
     }
 }
