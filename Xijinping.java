@@ -16,7 +16,7 @@ public class Xijinping extends Actor
         for (int i = 0; i < idle.length; i++) 
         {
             idle[i] = new GreenfootImage("images/xijinping_idle/idle" + i + ".png");
-            idle[i].scale(100, 150);
+            idle[i].scale(156, 262);
         }
         setImage(idle[0]);
     }
