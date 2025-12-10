@@ -2,12 +2,18 @@ import greenfoot.*;
 
 public class Hero extends Actor
 {
-    GreenfootImage idle = new GreenfootImage("images/heroFront_idle/idle0.png");
     GreenfootImage[] idle = new GreenfootImage[8];
     int imageIndex = 0;
     public void act()
     {
-        // Add your action code here.
+        if(Greenfoot.isKeyDown("left")) {
+            move(-5);
+        }
+        else if (Greenfoot.isKeyDown("right")) {
+            move(5);
+        }
+        
+        animateHeroFrontIdle();
     }
     
     public Hero() {
@@ -19,6 +25,6 @@ public class Hero extends Actor
     
     public void animateHeroFrontIdle() {
         setImage(idle[imageIndex]);
-        imageIndex = imageIndex + 1 % idle.length;
+        imageIndex = (imageIndex + 1) % idle.length;
     }
 }
