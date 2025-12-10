@@ -4,6 +4,8 @@ public class Hero extends Actor
 {
     GreenfootImage[] idle = new GreenfootImage[8];
     int imageIndex = 0;
+    SimpleTimer animationTimer = new SimpleTimer();
+    
     public void act()
     {
         if(Greenfoot.isKeyDown("left")) {
@@ -24,6 +26,11 @@ public class Hero extends Actor
     }
     
     public void animateHeroFrontIdle() {
+        if(animationTimer.millisElapsed() < 200) {
+            return;
+        }
+        animationTimer.mark();
+        
         setImage(idle[imageIndex]);
         imageIndex = (imageIndex + 1) % idle.length;
     }
