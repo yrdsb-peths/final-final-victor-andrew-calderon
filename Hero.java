@@ -21,7 +21,6 @@ public class Hero extends Actor
     public Hero() {
         for (int i = 0; i < idle.length; i++) {
             idle[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
-            idle[i].scale(100, 100);
         }
         setImage(idle[0]);
     }
