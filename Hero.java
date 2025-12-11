@@ -17,21 +17,28 @@ public class Hero extends Actor
 
         if (Greenfoot.isKeyDown("left")) {
             x -= 5;
+            direction = "left";
         }
         else if (Greenfoot.isKeyDown("right")) {
             x += 5;
+            direction = "right";
         }
 
-        if (Greenfoot.isKeyDown("up")) {
+        else if (Greenfoot.isKeyDown("up")) {
             y -= 5;
+            direction = "up";
         }
         else if (Greenfoot.isKeyDown("down")) {
             y += 5;
+            direction = "down";
+        }
+        else {
+            direction = "idle";
         }
 
         setLocation(x, y);
 
-        animateHeroFrontIdle();
+        animate();
     }
 
     
@@ -45,15 +52,14 @@ public class Hero extends Actor
         for (int i = 0; i < idle.length; i++) {
             idle[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
         }
-        setImage(idle[0]);
         
         for (int i = 0; i < walkLeft.length; i++) {
-            walkLeft[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
+            walkLeft[i] = new GreenfootImage("images/walkLeft/tile" + i + ".png");
         }
-        setImage(walkLeft[0]);
+        setImage(idle[0]);
     }
     
-    public void animateHeroFrontIdle() {
+    public void animate() {
         if(animationTimer.millisElapsed() < 200) {
             return;
         }
