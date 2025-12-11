@@ -18,6 +18,12 @@ public class Hero extends Actor
         animateHeroFrontIdle();
     }
     
+    public void addedToWorld(World world) {
+        int x = world.getWidth()/2;
+        int y = world.getHeight()/2;
+        setLocation(x, y);
+    }
+    
     public Hero() {
         for (int i = 0; i < idle.length; i++) {
             idle[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
