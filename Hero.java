@@ -3,8 +3,12 @@ import greenfoot.*;
 public class Hero extends Actor
 {
     GreenfootImage[] idle = new GreenfootImage[8];
+    GreenfootImage[] walkLeft = new GreenfootImage[6];
+    
     int imageIndex = 0;
     SimpleTimer animationTimer = new SimpleTimer();
+    
+    String direction = "idle";
     
     public void act()
     {
@@ -42,6 +46,11 @@ public class Hero extends Actor
             idle[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
         }
         setImage(idle[0]);
+        
+        for (int i = 0; i < walkLeft.length; i++) {
+            walkLeft[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
+        }
+        setImage(walkLeft[0]);
     }
     
     public void animateHeroFrontIdle() {
