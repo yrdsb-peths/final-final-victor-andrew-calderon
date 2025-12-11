@@ -8,15 +8,28 @@ public class Hero extends Actor
     
     public void act()
     {
-        if(Greenfoot.isKeyDown("left")) {
-            move(-5);
+        int x = getX();
+        int y = getY();
+
+        if (Greenfoot.isKeyDown("left")) {
+            x -= 5;
         }
         else if (Greenfoot.isKeyDown("right")) {
-            move(5);
+            x += 5;
         }
-        
+
+        if (Greenfoot.isKeyDown("up")) {
+            y -= 5;
+        }
+        else if (Greenfoot.isKeyDown("down")) {
+            y += 5;
+        }
+
+        setLocation(x, y);
+
         animateHeroFrontIdle();
     }
+
     
     public void addedToWorld(World world) {
         int x = world.getWidth()/2;
