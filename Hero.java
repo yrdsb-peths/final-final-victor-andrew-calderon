@@ -73,11 +73,5 @@ public class Hero extends Actor
         
         setImage(idle[imageIndex]);
         imageIndex = (imageIndex + 1) % idle.length;
-        
-        setImage(walkLeft[imageIndex]);
-        imageIndex = (imageIndex + 1) % walkLeft.length;
-        
-        setImage(walkRight[imageIndex]);
-        imageIndex = (imageIndex + 1) % walkRight.length;
     }
 }
