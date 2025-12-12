@@ -6,6 +6,7 @@ public class Hero extends Actor
     GreenfootImage[] walkLeft = new GreenfootImage[6];
     GreenfootImage[] walkRight = new GreenfootImage[6];
     GreenfootImage[] walkUp = new GreenfootImage[6];
+    GreenfootImage[] walkDown = new GreenfootImage[6];
     
     int imageIndex = 0;
     SimpleTimer animationTimer = new SimpleTimer();
@@ -65,6 +66,10 @@ public class Hero extends Actor
         
         for (int i = 0; i < walkUp.length; i++) {
             walkLeft[i] = new GreenfootImage("images/walkUp/tile" + i + ".png");
+        }
+        
+        for (int i = 0; i < walkDown.length; i++) {
+            walkLeft[i] = new GreenfootImage("images/walkDown/tile" + i + ".png");
         }
         
         setImage(idle[0]);
