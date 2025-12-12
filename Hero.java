@@ -61,15 +61,15 @@ public class Hero extends Actor
         }
         
         for (int i = 0; i < walkRight.length; i++) {
-            walkLeft[i] = new GreenfootImage("images/walkRight/tile" + i + ".png");
+            walkRight[i] = new GreenfootImage("images/walkRight/tile" + i + ".png");
         }
         
         for (int i = 0; i < walkUp.length; i++) {
-            walkLeft[i] = new GreenfootImage("images/walkUp/tile" + i + ".png");
+            walkUp[i] = new GreenfootImage("images/walkUp/tile" + i + ".png");
         }
         
         for (int i = 0; i < walkDown.length; i++) {
-            walkLeft[i] = new GreenfootImage("images/walkDown/tile" + i + ".png");
+            walkDown[i] = new GreenfootImage("images/walkDown/tile" + i + ".png");
         }
         
         setImage(idle[0]);
@@ -81,7 +81,25 @@ public class Hero extends Actor
         }
         animationTimer.mark();
         
-        setImage(idle[imageIndex]);
-        imageIndex = (imageIndex + 1) % idle.length;
+        if(direction.equals("idle")) {
+            setImage(idle[imageIndex]);
+            imageIndex = (imageIndex + 1) % idle.length;
+        }
+        else if(direction.equals("left")) {
+            setImage(walkLeft[imageIndex]);
+            imageIndex = (imageIndex + 1) % walkLeft.length;
+        }
+        else if(direction.equals("right")) {
+            setImage(walkRight[imageIndex]);
+            imageIndex = (imageIndex + 1) % walkRight.length;
+        }
+        else if(direction.equals("up")) {
+            setImage(walkUp[imageIndex]);
+            imageIndex = (imageIndex + 1) % walkUp.length;
+        }
+        else if(direction.equals("down")) {
+            setImage(walkDown[imageIndex]);
+            imageIndex = (imageIndex + 1) % walkDown.length;
+        }
     }
 }
