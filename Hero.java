@@ -54,27 +54,27 @@ public class Hero extends Actor
     public Hero() {
         for (int i = 0; i < idle.length; i++) {
             idle[i] = new GreenfootImage("images/idle/tile" + i + ".png");
-            idle[i].scale(60, 70);
+            idle[i].scale(40, 50);
         }
         
         for (int i = 0; i < walkLeft.length; i++) {
             walkLeft[i] = new GreenfootImage("images/walkLeft/tile" + i + ".png");
-            walkLeft[i].scale(60, 70);
+            walkLeft[i].scale(40, 50);
         }
         
         for (int i = 0; i < walkRight.length; i++) {
             walkRight[i] = new GreenfootImage("images/walkRight/tile" + i + ".png");
-            walkRight[i].scale(60, 70);
+            walkRight[i].scale(40, 50);
         }
         
         for (int i = 0; i < walkUp.length; i++) {
             walkUp[i] = new GreenfootImage("images/walkUp/tile" + i + ".png");
-            walkUp[i].scale(60, 70);
+            walkUp[i].scale(40, 50);
         }
         
         for (int i = 0; i < walkDown.length; i++) {
             walkDown[i] = new GreenfootImage("images/walkDown/tile" + i + ".png");
-            walkDown[i].scale(60, 70);
+            walkDown[i].scale(40, 50);
         }
         
         setImage(idle[0]);
