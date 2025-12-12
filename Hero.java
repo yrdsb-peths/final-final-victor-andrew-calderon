@@ -2,7 +2,7 @@ import greenfoot.*;
 
 public class Hero extends Actor
 {
-    GreenfootImage[] idle = new GreenfootImage[8];
+    GreenfootImage[] idle = new GreenfootImage[10];
     GreenfootImage[] walkLeft = new GreenfootImage[6];
     GreenfootImage[] walkRight = new GreenfootImage[6];
     GreenfootImage[] walkUp = new GreenfootImage[6];
@@ -53,7 +53,7 @@ public class Hero extends Actor
     
     public Hero() {
         for (int i = 0; i < idle.length; i++) {
-            idle[i] = new GreenfootImage("images/heroFront_idle/idle" + i + ".png");
+            idle[i] = new GreenfootImage("images/idle/tile" + i + ".png");
             idle[i].scale(60, 70);
         }
         
