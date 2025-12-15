@@ -7,7 +7,7 @@ public class Bullet extends Actor
     public Bullet() {
         // Set the bullet image (replace with your image file if needed)
         GreenfootImage img = new GreenfootImage("images/bullet.png");
-        img.scale(20, 20); // resize the bullet
+        img.scale(40, 40); // resize the bullet
         setImage(img);
     }
 
