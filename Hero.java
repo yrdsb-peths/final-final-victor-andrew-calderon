@@ -7,104 +7,161 @@ public class Hero extends Actor
     GreenfootImage[] walkRight = new GreenfootImage[6];
     GreenfootImage[] walkUp = new GreenfootImage[6];
     GreenfootImage[] walkDown = new GreenfootImage[6];
-    
+
     int imageIndex = 0;
     SimpleTimer animationTimer = new SimpleTimer();
-    
+
     String direction = "idle";
-    
-    public void act()
-    {
+    String lastDirection = "idle"; // Track previous direction
+
+    // HP fields
+    int maxHP = 100;
+    int currentHP = 100;
+
+    public Hero() {
+        // Load idle images
+        for (int i = 0; i < idle.length; i++) {
+            idle[i] = new GreenfootImage("images/idle/tile" + i + ".png");
+            idle[i].scale(60, 75);
+        }
+
+        // Load walkLeft images
+        for (int i = 0; i < walkLeft.length; i++) {
+            walkLeft[i] = new GreenfootImage("images/walkLeft/tile" + i + ".png");
+            walkLeft[i].scale(60, 75);
+        }
+
+        // Load walkRight images
+        for (int i = 0; i < walkRight.length; i++) {
+            walkRight[i] = new GreenfootImage("images/walkRight/tile" + i + ".png");
+            walkRight[i].scale(60, 75);
+        }
+
+        // Load walkUp images
+        for (int i = 0; i < walkUp.length; i++) {
+            walkUp[i] = new GreenfootImage("images/walkUp/tile" + i + ".png");
+            walkUp[i].scale(60, 75);
+        }
+
+        // Load walkDown images
+        for (int i = 0; i < walkDown.length; i++) {
+            walkDown[i] = new GreenfootImage("images/walkDown/tile" + i + ".png");
+            walkDown[i].scale(60, 75);
+        }
+
+        setImage(idle[0]);
+    }
+
+    public void addedToWorld(World world) {
+        int x = world.getWidth() / 2;
+        int y = world.getHeight() / 2;
+        setLocation(x, y);
+    }
+
+    public void act() {
+        movePlayer();
+        animate();
+        drawHPBar();
+    }
+
+    private void movePlayer() {
         int x = getX();
         int y = getY();
 
-        if (Greenfoot.isKeyDown("left")) {
+        boolean moved = false;
+
+        if (Greenfoot.isKeyDown("left") || Greenfoot.isKeyDown("a")) {
             x -= 5;
             direction = "left";
+            moved = true;
         }
-        else if (Greenfoot.isKeyDown("right")) {
+        if (Greenfoot.isKeyDown("right") || Greenfoot.isKeyDown("d")) {
             x += 5;
             direction = "right";
+            moved = true;
         }
-
-        else if (Greenfoot.isKeyDown("up")) {
+        if (Greenfoot.isKeyDown("up") || Greenfoot.isKeyDown("w")) {
             y -= 5;
             direction = "up";
+            moved = true;
         }
-        else if (Greenfoot.isKeyDown("down")) {
+        if (Greenfoot.isKeyDown("down") || Greenfoot.isKeyDown("s")) {
             y += 5;
             direction = "down";
+            moved = true;
         }
-        else {
+
+        if (!moved) {
             direction = "idle";
         }
 
         setLocation(x, y);
-
-        animate();
     }
 
-    
-    public void addedToWorld(World world) {
-        int x = world.getWidth()/2;
-        int y = world.getHeight()/2;
-        setLocation(x, y);
-    }
-    
-    public Hero() {
-        for (int i = 0; i < idle.length; i++) {
-            idle[i] = new GreenfootImage("images/idle/tile" + i + ".png");
-            idle[i].scale(40, 50);
+    private void animate() {
+        if (animationTimer.millisElapsed() < 200) return;
+
+        if (!direction.equals(lastDirection)) {
+            imageIndex = 0;
+            lastDirection = direction;
         }
-        
-        for (int i = 0; i < walkLeft.length; i++) {
-            walkLeft[i] = new GreenfootImage("images/walkLeft/tile" + i + ".png");
-            walkLeft[i].scale(40, 50);
-        }
-        
-        for (int i = 0; i < walkRight.length; i++) {
-            walkRight[i] = new GreenfootImage("images/walkRight/tile" + i + ".png");
-            walkRight[i].scale(40, 50);
-        }
-        
-        for (int i = 0; i < walkUp.length; i++) {
-            walkUp[i] = new GreenfootImage("images/walkUp/tile" + i + ".png");
-            walkUp[i].scale(40, 50);
-        }
-        
-        for (int i = 0; i < walkDown.length; i++) {
-            walkDown[i] = new GreenfootImage("images/walkDown/tile" + i + ".png");
-            walkDown[i].scale(40, 50);
-        }
-        
-        setImage(idle[0]);
-    }
-    
-    public void animate() {
-        if(animationTimer.millisElapsed() < 200) {
-            return;
-        }
+
         animationTimer.mark();
-        
-        if(direction.equals("idle")) {
-            setImage(idle[imageIndex]);
-            imageIndex = (imageIndex + 1) % idle.length;
+
+        switch (direction) {
+            case "idle":
+                setImage(idle[imageIndex]);
+                imageIndex = (imageIndex + 1) % idle.length;
+                break;
+            case "left":
+                setImage(walkLeft[imageIndex]);
+                imageIndex = (imageIndex + 1) % walkLeft.length;
+                break;
+            case "right":
+                setImage(walkRight[imageIndex]);
+                imageIndex = (imageIndex + 1) % walkRight.length;
+                break;
+            case "up":
+                setImage(walkUp[imageIndex]);
+                imageIndex = (imageIndex + 1) % walkUp.length;
+                break;
+            case "down":
+                setImage(walkDown[imageIndex]);
+                imageIndex = (imageIndex + 1) % walkDown.length;
+                break;
         }
-        else if(direction.equals("left")) {
-            setImage(walkLeft[imageIndex]);
-            imageIndex = (imageIndex + 1) % walkLeft.length;
-        }
-        else if(direction.equals("right")) {
-            setImage(walkRight[imageIndex]);
-            imageIndex = (imageIndex + 1) % walkRight.length;
-        }
-        else if(direction.equals("up")) {
-            setImage(walkUp[imageIndex]);
-            imageIndex = (imageIndex + 1) % walkUp.length;
-        }
-        else if(direction.equals("down")) {
-            setImage(walkDown[imageIndex]);
-            imageIndex = (imageIndex + 1) % walkDown.length;
-        }
+    }
+
+    // Draw a health bar above the hero
+    private void drawHPBar() {
+        GreenfootImage image = getImage();
+        int barWidth = image.getWidth();
+        int barHeight = 5;
+
+        // Create a copy of current image to draw on
+        GreenfootImage newImage = new GreenfootImage(image);
+
+        // Draw background (red)
+        newImage.setColor(Color.RED);
+        newImage.fillRect(0, 0, barWidth, barHeight);
+
+        // Draw current HP (green)
+        int hpWidth = (int) ((currentHP / (double) maxHP) * barWidth);
+        newImage.setColor(Color.GREEN);
+        newImage.fillRect(0, 0, hpWidth, barHeight);
+
+        setImage(newImage);
+    }
+
+    // Method to reduce HP (for testing)
+    public void takeDamage(int damage) {
+        currentHP -= damage;
+        if (currentHP < 0) currentHP = 0;
+    }
+
+    // Method to heal HP
+    public void heal(int amount) {
+        currentHP += amount;
+        if (currentHP > maxHP) currentHP = maxHP;
     }
 }
