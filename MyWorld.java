@@ -12,8 +12,5 @@ public class MyWorld extends World {
         
         Xijinping xijinping = new Xijinping();
         addObject(xijinping, 100, 150);
-        
-        Bullet bullet = new Bullet();
-        addObject(bullet, 400, 400);
     }
 }

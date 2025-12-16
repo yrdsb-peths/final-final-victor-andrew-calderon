@@ -27,5 +27,8 @@ public class Bullet extends Actor
         if (getY() < 0) {
             getWorld().removeObject(this);
         }
+        if (getX() < 0) {
+            getWorld().removeObject(this);
+        }
     }
 }
