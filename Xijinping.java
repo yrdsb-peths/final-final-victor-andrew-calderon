@@ -17,7 +17,18 @@ public class Xijinping extends Actor
     String state = "move"; // states: move, pause
 
     int moveDistance = 0; // distance moved in current move state
-    int moveLimit = 120;   // move 60 pixels before pausing
+    int moveLimit = 200;   // move 200 pixels before pausing
+    
+    int[][] waypoints = {
+    {200, 150},
+    {500, 150},
+    {500, 400},
+    {200, 400}
+    };
+
+    int currentWaypoint = 0;
+    int speed = 4;
+
 
     public Xijinping() 
     {
@@ -54,15 +65,14 @@ public class Xijinping extends Actor
     {
         animate();
         if (state.equals("move")) {
-            moveStep();
+            moveToWaypoint();
         } else if (state.equals("pause")) {
             autoShoot();
-            // stay paused for 1 second
-            if (stateTimer.millisElapsed() > 1000) {
+            // stay paused for 2 second
+            if (stateTimer.millisElapsed() > 2000) {
                 stateTimer.mark();
                 state = "move";
-                moveDistance = 0;
-                chooseNewDirection();
+                currentWaypoint = (currentWaypoint + 1) % waypoints.length;
             }
         }
     }
@@ -88,7 +98,7 @@ public class Xijinping extends Actor
         int x = getX();
         int y = getY();
 
-        int step = 3; // pixels per act
+        int step = 5; // 5 pixels per act
 
         switch (direction) {
             case "up": y -= step; moveDistance += step; break;
@@ -115,24 +125,33 @@ public class Xijinping extends Actor
 
     private void autoShoot() 
     {
-        if (shootingTimer.millisElapsed() < 500) return; // shoot every 0.5 sec
+        if (shootingTimer.millisElapsed() < 300) return;
 
         shootingTimer.mark();
-        Bullet bullet = new Bullet();
 
-        int bx = getX();
-        int by = getY();
+        int baseRotation = getBulletRotation(direction);
 
-        switch (direction) {
-            case "left": bx -= 40; break;
-            case "right": bx += 40; break;
-            case "up": by -= 40; break;
-            case "down": by += 40; break;
+        // Spread angles (degrees)
+        int[] spreadAngles = {-15, 0, 15}; // 3-bullet spread
+
+        for (int angle : spreadAngles) {
+            Bullet bullet = new Bullet();
+
+            int bx = getX();
+            int by = getY();
+
+            switch (direction) {
+                case "left":  bx -= 40; break;
+                case "right": bx += 40; break;
+                case "up":    by -= 40; break;
+                case "down":  by += 40; break;
+            }
+
+            getWorld().addObject(bullet, bx, by);
+            bullet.setRotation(baseRotation + angle);
         }
-
-        getWorld().addObject(bullet, bx, by);
-        bullet.setRotation(getBulletRotation(direction));
     }
+
 
     private int getBulletRotation(String dir) {
         switch(dir) {
@@ -148,4 +167,34 @@ public class Xijinping extends Actor
         String[] dirs = {"up", "down", "left", "right"};
         direction = dirs[Greenfoot.getRandomNumber(dirs.length)];
     }
+    
+    private void moveToWaypoint()
+    {
+        int targetX = waypoints[currentWaypoint][0];
+        int targetY = waypoints[currentWaypoint][1];
+
+        int dx = targetX - getX();
+        int dy = targetY - getY();
+
+        // Decide direction (for animation + bullets)
+        if (Math.abs(dx) > Math.abs(dy)) {
+            direction = (dx > 0) ? "right" : "left";
+        } else {
+            direction = (dy > 0) ? "down" : "up";
+        }
+
+        // Move toward target
+        int stepX = Math.min(speed, Math.abs(dx)) * Integer.signum(dx);
+        int stepY = Math.min(speed, Math.abs(dy)) * Integer.signum(dy);
+
+        setLocation(getX() + stepX, getY() + stepY);
+
+        // Check if arrived
+        if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
+            setLocation(targetX, targetY);
+            state = "pause";
+            stateTimer.mark();
+        }
+    }
+
 }

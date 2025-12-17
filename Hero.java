@@ -10,6 +10,9 @@ public class Hero extends Actor
 
     int imageIndex = 0;
     SimpleTimer animationTimer = new SimpleTimer();
+    
+    SimpleTimer damageTimer = new SimpleTimer();
+    int damageCooldown = 500; // milliseconds
 
     String direction = "idle";
     String lastDirection = "idle"; // Track previous direction
@@ -60,6 +63,7 @@ public class Hero extends Actor
 
     public void act() {
         movePlayer();
+        checkBulletHit();
         animate();
         drawHPBar();
     }
@@ -131,7 +135,27 @@ public class Hero extends Actor
                 break;
         }
     }
+    
+    private void checkBulletHit() {
+        Bullet bullet = (Bullet) getOneIntersectingObject(Bullet.class);
 
+        if (bullet != null && damageTimer.millisElapsed() > damageCooldown) {
+            takeDamage(10);
+            damageTimer.mark();
+            getWorld().removeObject(bullet);
+        }
+    }
+    
+    public void takeDamage(int damage) {
+        currentHP -= damage;
+        if (currentHP < 0) currentHP = 0;
+
+        if (currentHP == 0) {
+            Greenfoot.stop(); // or trigger game over
+        }
+    }
+
+    
     // Draw a health bar above the hero
     private void drawHPBar() {
         GreenfootImage image = getImage();
@@ -151,17 +175,5 @@ public class Hero extends Actor
         newImage.fillRect(0, 0, hpWidth, barHeight);
 
         setImage(newImage);
-    }
-
-    // Method to reduce HP (for testing)
-    public void takeDamage(int damage) {
-        currentHP -= damage;
-        if (currentHP < 0) currentHP = 0;
-    }
-
-    // Method to heal HP
-    public void heal(int amount) {
-        currentHP += amount;
-        if (currentHP > maxHP) currentHP = maxHP;
     }
 }

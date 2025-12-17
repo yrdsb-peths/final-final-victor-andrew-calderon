@@ -1,33 +1,24 @@
-import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
+import greenfoot.*;
 
 public class Bullet extends Actor
 {
-    private int speed = 10; // pixels per act cycle
+    private int speed = 10;
 
     public Bullet() {
-        // Set the bullet image (replace with your image file if needed)
         GreenfootImage img = new GreenfootImage("images/bullet.png");
-        img.scale(40, 40); // resize the bullet
+        img.scale(40, 40);
+        img.rotate(180);
         setImage(img);
     }
 
     public void act()
     {
-        moveBullet();
+        move(speed);     // ✅ move in facing direction
         checkEdge();
     }
 
-    // Move the bullet upwards
-    private void moveBullet() {
-        setLocation(getX(), getY() - speed);
-    }
-
-    // Remove the bullet if it goes off the screen
     private void checkEdge() {
-        if (getY() < 0) {
-            getWorld().removeObject(this);
-        }
-        if (getX() < 0) {
+        if (isAtEdge()) {
             getWorld().removeObject(this);
         }
     }
