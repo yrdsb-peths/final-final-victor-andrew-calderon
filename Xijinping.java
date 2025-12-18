@@ -65,7 +65,7 @@ public class Xijinping extends Actor
     {
         animate();
         if (state.equals("move")) {
-            moveToWaypoint();
+            moveTowardHero();
         } else if (state.equals("pause")) {
             autoShoot();
             // stay paused for 2 second
@@ -132,7 +132,7 @@ public class Xijinping extends Actor
         int baseRotation = getBulletRotation(direction);
 
         // Spread angles (degrees)
-        int[] spreadAngles = {-15, 0, 15}; // 3-bullet spread
+        int[] spreadAngles = {-45, -30, -15, 0, 15, 30, 45}; // bullet spread
 
         for (int angle : spreadAngles) {
             Bullet bullet = new Bullet();
@@ -151,6 +151,36 @@ public class Xijinping extends Actor
             bullet.setRotation(baseRotation + angle);
         }
     }
+    
+    private void moveTowardHero()
+    {
+        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
+        if (hero == null) return;
+
+        int dx = hero.getX() - getX();
+        int dy = hero.getY() - getY();
+
+        // Face hero
+        if (Math.abs(dx) > Math.abs(dy)) {
+            direction = (dx > 0) ? "right" : "left";
+        } else {
+            direction = (dy > 0) ? "down" : "up";
+        }
+
+        // Stop when close enough
+        int stopDistance = 120;
+        if (Math.hypot(dx, dy) < stopDistance) {
+            state = "pause";
+            stateTimer.mark();
+            return;
+        }
+
+        int stepX = Math.min(speed, Math.abs(dx)) * Integer.signum(dx);
+        int stepY = Math.min(speed, Math.abs(dy)) * Integer.signum(dy);
+
+        setLocation(getX() + stepX, getY() + stepY);
+    }
+
 
 
     private int getBulletRotation(String dir) {

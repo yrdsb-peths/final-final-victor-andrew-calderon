@@ -8,9 +8,9 @@ public class MyWorld extends World {
         setBackground(dungeonImage);
         
         Hero hero = new Hero();
-        addObject(hero, 300, 200);
+        addObject(hero, 450, 200);
         
         Xijinping xijinping = new Xijinping();
-        addObject(xijinping, 100, 150);
+        addObject(xijinping, 450, 150);
     }
 }
