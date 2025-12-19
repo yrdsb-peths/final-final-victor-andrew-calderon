@@ -2,7 +2,7 @@ import greenfoot.*;
 
 public class Bullet extends Actor
 {
-    private int speed = 8;
+    private int speed = 4;
 
     public Bullet() {
         GreenfootImage img = new GreenfootImage("images/bullet.png");

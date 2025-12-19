@@ -2,6 +2,7 @@ import greenfoot.*;
 
 public class Xijinping extends Actor
 {
+    // ===== IMAGES =====
     GreenfootImage[] idle = new GreenfootImage[4];
     GreenfootImage[] walkLeft = new GreenfootImage[4];
     GreenfootImage[] walkRight = new GreenfootImage[4];
@@ -9,47 +10,40 @@ public class Xijinping extends Actor
     GreenfootImage[] walkDown = new GreenfootImage[4];
 
     int imageIndex = 0;
+
+    // ===== TIMERS =====
     SimpleTimer animationTimer = new SimpleTimer();
     SimpleTimer shootingTimer = new SimpleTimer();
     SimpleTimer stateTimer = new SimpleTimer();
+    SimpleTimer damageTimer = new SimpleTimer();
 
+    // ===== STATE =====
     String direction = "idle";
-    String state = "move"; // states: move, pause
+    String state = "move";
 
-    int moveDistance = 0; // distance moved in current move state
-    int moveLimit = 200;   // move 200 pixels before pausing
-    
-    int[][] waypoints = {
-    {200, 150},
-    {500, 150},
-    {500, 400},
-    {200, 400}
-    };
-
-    int currentWaypoint = 0;
     int speed = 4;
 
+    // ===== HP =====
+    int maxHP = 250;
+    int currentHP = 250;
+    int damageCooldown = 400; // ms between hits
 
+    // ================= CONSTRUCTOR =================
     public Xijinping() 
     {
-        // Load idle images
         for (int i = 0; i < idle.length; i++) {
             idle[i] = new GreenfootImage("images/xijinping_idle/tile" + i + ".png");
             idle[i].scale(78, 131);
-        }
-        for (int i = 0; i < walkLeft.length; i++) {
+
             walkLeft[i] = new GreenfootImage("images/xijinping_walkLeft/tile" + i + ".png");
             walkLeft[i].scale(78, 131);
-        }
-        for (int i = 0; i < walkRight.length; i++) {
+
             walkRight[i] = new GreenfootImage("images/xijinping_walkRight/tile" + i + ".png");
             walkRight[i].scale(78, 131);
-        }
-        for (int i = 0; i < walkUp.length; i++) {
+
             walkUp[i] = new GreenfootImage("images/xijinping_walkUp/tile" + i + ".png");
             walkUp[i].scale(78, 131);
-        }
-        for (int i = 0; i < walkDown.length; i++) {
+
             walkDown[i] = new GreenfootImage("images/xijinping_walkDown/tile" + i + ".png");
             walkDown[i].scale(78, 131);
         }
@@ -57,82 +51,65 @@ public class Xijinping extends Actor
         setImage(idle[0]);
         shootingTimer.mark();
         stateTimer.mark();
-
-        chooseNewDirection(); // start with a random direction
+        damageTimer.mark();
     }
 
+    // ================= ACT =================
     public void act()
     {
         animate();
+        preventOverlap();
+        checkHeroAttack();
+        drawHPBar();
+
         if (state.equals("move")) {
             moveTowardHero();
-        } else if (state.equals("pause")) {
+        } 
+        else if (state.equals("pause")) {
             autoShoot();
-            // stay paused for 2 second
             if (stateTimer.millisElapsed() > 2000) {
                 stateTimer.mark();
                 state = "move";
-                currentWaypoint = (currentWaypoint + 1) % waypoints.length;
             }
         }
     }
 
-    private void animate() 
+    // ================= MOVEMENT =================
+    private void moveTowardHero()
     {
-        if (animationTimer.millisElapsed() < 200) return;
+        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
+        if (hero == null) return;
 
-        animationTimer.mark();
+        int dx = hero.getX() - getX();
+        int dy = hero.getY() - getY();
 
-        switch (direction) {
-            case "idle": setImage(idle[imageIndex]); break;
-            case "left": setImage(walkLeft[imageIndex]); break;
-            case "right": setImage(walkRight[imageIndex]); break;
-            case "up": setImage(walkUp[imageIndex]); break;
-            case "down": setImage(walkDown[imageIndex]); break;
+        if (Math.abs(dx) > Math.abs(dy)) {
+            direction = (dx > 0) ? "right" : "left";
+        } else {
+            direction = (dy > 0) ? "down" : "up";
         }
 
-        imageIndex = (imageIndex + 1) % 4;
-    }
-
-    private void moveStep() {
-        int x = getX();
-        int y = getY();
-
-        int step = 5; // 5 pixels per act
-
-        switch (direction) {
-            case "up": y -= step; moveDistance += step; break;
-            case "down": y += step; moveDistance += step; break;
-            case "left": x -= step; moveDistance += step; break;
-            case "right": x += step; moveDistance += step; break;
-        }
-
-        // Keep inside world bounds
-        World world = getWorld();
-        if (x < 0) x = 0;
-        if (x > world.getWidth() - 1) x = world.getWidth() - 1;
-        if (y < 0) y = 0;
-        if (y > world.getHeight() - 1) y = world.getHeight() - 1;
-
-        setLocation(x, y);
-
-        // Check if moved enough
-        if (moveDistance >= moveLimit) {
+        int stopDistance = 120;
+        if (Math.hypot(dx, dy) < stopDistance) {
             state = "pause";
             stateTimer.mark();
+            return;
         }
+
+        int stepX = Math.min(speed, Math.abs(dx)) * Integer.signum(dx);
+        int stepY = Math.min(speed, Math.abs(dy)) * Integer.signum(dy);
+
+        setLocation(getX() + stepX, getY() + stepY);
     }
 
+    // ================= SHOOTING =================
     private void autoShoot() 
     {
         if (shootingTimer.millisElapsed() < 300) return;
-
         shootingTimer.mark();
 
         int baseRotation = getBulletRotation(direction);
-
-        // Spread angles (degrees)
-        int[] spreadAngles = {-45, -30, -15, 0, 15, 30, 45}; // bullet spread
+        int[] spreadAngles = {-30, -15, 0, 15, 30};
 
         for (int angle : spreadAngles) {
             Bullet bullet = new Bullet();
@@ -151,38 +128,70 @@ public class Xijinping extends Actor
             bullet.setRotation(baseRotation + angle);
         }
     }
-    
-    private void moveTowardHero()
+
+    // ================= DAMAGE FROM HERO =================
+    private void checkHeroAttack()
     {
         Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
         if (hero == null) return;
 
-        int dx = hero.getX() - getX();
-        int dy = hero.getY() - getY();
+        int attackRange = 100;
 
-        // Face hero
-        if (Math.abs(dx) > Math.abs(dy)) {
-            direction = (dx > 0) ? "right" : "left";
-        } else {
-            direction = (dy > 0) ? "down" : "up";
+        double distance = Math.hypot(
+            hero.getX() - getX(),
+            hero.getY() - getY()
+        );
+
+        if (hero.attacking && distance <= attackRange &&
+            damageTimer.millisElapsed() > damageCooldown)
+        {
+            currentHP -= 20;
+            damageTimer.mark();
+
+            if (currentHP <= 0) {
+                currentHP = 0;
+                getWorld().removeObject(this); // boss defeated
+            }
         }
-
-        // Stop when close enough
-        int stopDistance = 120;
-        if (Math.hypot(dx, dy) < stopDistance) {
-            state = "pause";
-            stateTimer.mark();
-            return;
-        }
-
-        int stepX = Math.min(speed, Math.abs(dx)) * Integer.signum(dx);
-        int stepY = Math.min(speed, Math.abs(dy)) * Integer.signum(dy);
-
-        setLocation(getX() + stepX, getY() + stepY);
     }
 
+    // ================= ANIMATION =================
+    private void animate() 
+    {
+        if (animationTimer.millisElapsed() < 200) return;
+        animationTimer.mark();
 
+        switch (direction) {
+            case "idle": setImage(idle[imageIndex]); break;
+            case "left": setImage(walkLeft[imageIndex]); break;
+            case "right": setImage(walkRight[imageIndex]); break;
+            case "up": setImage(walkUp[imageIndex]); break;
+            case "down": setImage(walkDown[imageIndex]); break;
+        }
 
+        imageIndex = (imageIndex + 1) % 4;
+    }
+
+    // ================= HP BAR =================
+    private void drawHPBar()
+    {
+        GreenfootImage base = getImage();
+        GreenfootImage img = new GreenfootImage(base);
+
+        int barWidth = base.getWidth();
+        int barHeight = 6;
+
+        img.setColor(Color.RED);
+        img.fillRect(0, 0, barWidth, barHeight);
+
+        img.setColor(Color.GREEN);
+        int hpWidth = (int)((currentHP / (double)maxHP) * barWidth);
+        img.fillRect(0, 0, hpWidth, barHeight);
+
+        setImage(img);
+    }
+
+    // ================= UTILS =================
     private int getBulletRotation(String dir) {
         switch(dir) {
             case "up": return 270;
@@ -192,38 +201,28 @@ public class Xijinping extends Actor
             default: return 0;
         }
     }
-
-    private void chooseNewDirection() {
-        String[] dirs = {"up", "down", "left", "right"};
-        direction = dirs[Greenfoot.getRandomNumber(dirs.length)];
-    }
     
-    private void moveToWaypoint()
+    private void preventOverlap()
     {
-        int targetX = waypoints[currentWaypoint][0];
-        int targetY = waypoints[currentWaypoint][1];
+        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
+        if (hero == null) return;
 
-        int dx = targetX - getX();
-        int dy = targetY - getY();
+        int minDistance = 85; // collision radius
 
-        // Decide direction (for animation + bullets)
-        if (Math.abs(dx) > Math.abs(dy)) {
-            direction = (dx > 0) ? "right" : "left";
-        } else {
-            direction = (dy > 0) ? "down" : "up";
-        }
+        int dx = hero.getX() - getX();
+        int dy = hero.getY() - getY();
+        double distance = Math.hypot(dx, dy);
 
-        // Move toward target
-        int stepX = Math.min(speed, Math.abs(dx)) * Integer.signum(dx);
-        int stepY = Math.min(speed, Math.abs(dy)) * Integer.signum(dy);
+        if (distance < minDistance && distance > 0) {
+            double push = minDistance - distance;
 
-        setLocation(getX() + stepX, getY() + stepY);
+            int pushX = (int)(push * dx / distance);
+            int pushY = (int)(push * dy / distance);
 
-        // Check if arrived
-        if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
-            setLocation(targetX, targetY);
-            state = "pause";
-            stateTimer.mark();
+            hero.setLocation(
+            hero.getX() + pushX,
+            hero.getY() + pushY
+            );
         }
     }
 

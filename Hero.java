@@ -2,178 +2,183 @@ import greenfoot.*;
 
 public class Hero extends Actor
 {
+    // ===== IMAGES =====
     GreenfootImage[] idle = new GreenfootImage[10];
     GreenfootImage[] walkLeft = new GreenfootImage[6];
     GreenfootImage[] walkRight = new GreenfootImage[6];
     GreenfootImage[] walkUp = new GreenfootImage[6];
     GreenfootImage[] walkDown = new GreenfootImage[6];
 
+    GreenfootImage[] attackLeft = new GreenfootImage[6];
+    GreenfootImage[] attackRight = new GreenfootImage[6];
+    GreenfootImage[] attackUp = new GreenfootImage[6];
+    GreenfootImage[] attackDown = new GreenfootImage[6];
+
     int imageIndex = 0;
+
+    // ===== TIMERS =====
     SimpleTimer animationTimer = new SimpleTimer();
-    
+    SimpleTimer attackTimer = new SimpleTimer();
     SimpleTimer damageTimer = new SimpleTimer();
-    int damageCooldown = 500; // milliseconds
 
-    String direction = "idle";
-    String lastDirection = "idle"; // Track previous direction
+    // ===== STATE =====
+    boolean attacking = false;
+    int attackDuration = 400;
 
-    // HP fields
-    int maxHP = 100;
-    int currentHP = 100;
+    String direction = "down";
+    String lastDirection = "down";
 
-    public Hero() {
-        // Load idle images
+    // ===== HP =====
+    public int maxHP = 100;
+    public int currentHP = 100;
+    int damageCooldown = 500;
+
+    // ===== MOVEMENT =====
+    int moveSpeed = 5;
+    int attackMoveSpeed = 2;
+
+    // ================= CONSTRUCTOR =================
+    public Hero()
+    {
         for (int i = 0; i < idle.length; i++) {
             idle[i] = new GreenfootImage("images/idle/tile" + i + ".png");
             idle[i].scale(60, 75);
         }
 
-        // Load walkLeft images
         for (int i = 0; i < walkLeft.length; i++) {
             walkLeft[i] = new GreenfootImage("images/walkLeft/tile" + i + ".png");
             walkLeft[i].scale(60, 75);
-        }
 
-        // Load walkRight images
-        for (int i = 0; i < walkRight.length; i++) {
             walkRight[i] = new GreenfootImage("images/walkRight/tile" + i + ".png");
             walkRight[i].scale(60, 75);
-        }
 
-        // Load walkUp images
-        for (int i = 0; i < walkUp.length; i++) {
             walkUp[i] = new GreenfootImage("images/walkUp/tile" + i + ".png");
             walkUp[i].scale(60, 75);
-        }
 
-        // Load walkDown images
-        for (int i = 0; i < walkDown.length; i++) {
             walkDown[i] = new GreenfootImage("images/walkDown/tile" + i + ".png");
             walkDown[i].scale(60, 75);
+        }
+
+        for (int i = 0; i < attackLeft.length; i++) {
+            attackLeft[i] = new GreenfootImage("images/attackLeft/tile" + i + ".png");
+            attackLeft[i].scale(70, 70);
+
+            attackRight[i] = new GreenfootImage("images/attackRight/tile" + i + ".png");
+            attackRight[i].scale(70, 70);
+
+            attackUp[i] = new GreenfootImage("images/attackUp/tile" + i + ".png");
+            attackUp[i].scale(70, 70);
+
+            attackDown[i] = new GreenfootImage("images/attackDown/tile" + i + ".png");
+            attackDown[i].scale(70, 70);
         }
 
         setImage(idle[0]);
     }
 
-    public void addedToWorld(World world) {
-        int x = world.getWidth() / 2;
-        int y = world.getHeight() / 2;
-        setLocation(x, y);
+    // ================= WORLD =================
+    public void addedToWorld(World w)
+    {
+        setLocation(w.getWidth() / 2, w.getHeight() / 2);
+        w.addObject(new HeroHPBar(this), getX(), getY() - 45);
     }
 
-    public void act() {
+    // ================= ACT =================
+    public void act()
+    {
+        handleAttackInput();
         movePlayer();
         checkBulletHit();
         animate();
-        drawHPBar();
     }
 
-    private void movePlayer() {
-        int x = getX();
-        int y = getY();
-
-        boolean moved = false;
-
-        if (Greenfoot.isKeyDown("left") || Greenfoot.isKeyDown("a")) {
-            x -= 5;
-            direction = "left";
-            moved = true;
-        }
-        if (Greenfoot.isKeyDown("right") || Greenfoot.isKeyDown("d")) {
-            x += 5;
-            direction = "right";
-            moved = true;
-        }
-        if (Greenfoot.isKeyDown("up") || Greenfoot.isKeyDown("w")) {
-            y -= 5;
-            direction = "up";
-            moved = true;
-        }
-        if (Greenfoot.isKeyDown("down") || Greenfoot.isKeyDown("s")) {
-            y += 5;
-            direction = "down";
-            moved = true;
-        }
-
-        if (!moved) {
-            direction = "idle";
-        }
-
-        setLocation(x, y);
-    }
-
-    private void animate() {
-        if (animationTimer.millisElapsed() < 200) return;
-
-        if (!direction.equals(lastDirection)) {
+    // ================= INPUT =================
+    private void handleAttackInput()
+    {
+        if (Greenfoot.isKeyDown("space") && !attacking) {
+            attacking = true;
+            attackTimer.mark();
             imageIndex = 0;
+        }
+    }
+
+    // ================= MOVEMENT =================
+    private void movePlayer()
+    {
+        int speed = attacking ? attackMoveSpeed : moveSpeed;
+
+        int dx = 0;
+        int dy = 0;
+
+        if (Greenfoot.isKeyDown("a") || Greenfoot.isKeyDown("left"))  dx--;
+        if (Greenfoot.isKeyDown("d") || Greenfoot.isKeyDown("right")) dx++;
+        if (Greenfoot.isKeyDown("w") || Greenfoot.isKeyDown("up"))    dy--;
+        if (Greenfoot.isKeyDown("s") || Greenfoot.isKeyDown("down"))  dy++;
+
+        if (dx != 0 || dy != 0) {
+            double len = Math.sqrt(dx*dx + dy*dy);
+            dx = (int)(dx / len * speed);
+            dy = (int)(dy / len * speed);
+
+            setLocation(getX() + dx, getY() + dy);
+
+            if (Math.abs(dx) > Math.abs(dy))
+                direction = (dx > 0) ? "right" : "left";
+            else
+                direction = (dy > 0) ? "down" : "up";
+
             lastDirection = direction;
         }
+    }
 
+    // ================= ANIMATION =================
+    private void animate()
+    {
+        if (animationTimer.millisElapsed() < 100) return;
         animationTimer.mark();
 
-        switch (direction) {
-            case "idle":
-                setImage(idle[imageIndex]);
-                imageIndex = (imageIndex + 1) % idle.length;
-                break;
-            case "left":
-                setImage(walkLeft[imageIndex]);
-                imageIndex = (imageIndex + 1) % walkLeft.length;
-                break;
-            case "right":
-                setImage(walkRight[imageIndex]);
-                imageIndex = (imageIndex + 1) % walkRight.length;
-                break;
-            case "up":
-                setImage(walkUp[imageIndex]);
-                imageIndex = (imageIndex + 1) % walkUp.length;
-                break;
-            case "down":
-                setImage(walkDown[imageIndex]);
-                imageIndex = (imageIndex + 1) % walkDown.length;
-                break;
+        if (attacking) {
+            switch (lastDirection) {
+                case "left":  setImage(attackLeft[imageIndex % attackLeft.length]); break;
+                case "right": setImage(attackRight[imageIndex % attackRight.length]); break;
+                case "up":    setImage(attackUp[imageIndex % attackUp.length]); break;
+                case "down":  setImage(attackDown[imageIndex % attackDown.length]); break;
+            }
+
+            imageIndex++;
+
+            if (attackTimer.millisElapsed() > attackDuration) {
+                attacking = false;
+                imageIndex = 0;
+            }
+            return;
         }
+
+        switch (direction) {
+            case "left":  setImage(walkLeft[imageIndex % walkLeft.length]); break;
+            case "right": setImage(walkRight[imageIndex % walkRight.length]); break;
+            case "up":    setImage(walkUp[imageIndex % walkUp.length]); break;
+            case "down":  setImage(walkDown[imageIndex % walkDown.length]); break;
+            default:      setImage(idle[imageIndex % idle.length]); break;
+        }
+
+        imageIndex++;
     }
-    
-    private void checkBulletHit() {
-        Bullet bullet = (Bullet) getOneIntersectingObject(Bullet.class);
+
+    // ================= DAMAGE =================
+    private void checkBulletHit()
+    {
+        Bullet bullet = (Bullet)getOneIntersectingObject(Bullet.class);
 
         if (bullet != null && damageTimer.millisElapsed() > damageCooldown) {
-            takeDamage(10);
+            currentHP -= 8;
             damageTimer.mark();
             getWorld().removeObject(bullet);
+
+            if (currentHP <= 0) {
+                currentHP = 0;
+                Greenfoot.stop();
+            }
         }
-    }
-    
-    public void takeDamage(int damage) {
-        currentHP -= damage;
-        if (currentHP < 0) currentHP = 0;
-
-        if (currentHP == 0) {
-            Greenfoot.stop(); // or trigger game over
-        }
-    }
-
-    
-    // Draw a health bar above the hero
-    private void drawHPBar() {
-        GreenfootImage image = getImage();
-        int barWidth = image.getWidth();
-        int barHeight = 5;
-
-        // Create a copy of current image to draw on
-        GreenfootImage newImage = new GreenfootImage(image);
-
-        // Draw background (red)
-        newImage.setColor(Color.RED);
-        newImage.fillRect(0, 0, barWidth, barHeight);
-
-        // Draw current HP (green)
-        int hpWidth = (int) ((currentHP / (double) maxHP) * barWidth);
-        newImage.setColor(Color.GREEN);
-        newImage.fillRect(0, 0, hpWidth, barHeight);
-
-        setImage(newImage);
     }
 }
