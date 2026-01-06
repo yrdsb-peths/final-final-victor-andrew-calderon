@@ -28,15 +28,14 @@ public class Xijinping extends Actor
     int currentHP = 250;
     int damageCooldown = 400;
 
-    // ===== SOUND (WAV ONLY) =====
-    GreenfootSound xijinpingvoice =
-        new GreenfootSound("Xi_Jinping_addressing_the_press_October_2022.mp3");
-        
-    
+    // ===== SOUND =====
+    GreenfootSound startSound = new GreenfootSound("game-start-317318.mp3");
+
     // ================= CONSTRUCTOR =================
     public Xijinping()
     {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++)
+        {
             idle[i] = new GreenfootImage("images/xijinping_idle/tile" + i + ".png");
             idle[i].scale(78, 131);
 
@@ -59,11 +58,11 @@ public class Xijinping extends Actor
         damageTimer.mark();
     }
 
-    // ================= PLAY SOUND SAFELY =================
+    // ================= START SOUND =================
     public void addedToWorld(World w)
     {
-        xijinpingvoice.setVolume(100);
-        xijinpingvoice.play();
+        startSound.setVolume(90);
+        startSound.play();
     }
 
     // ================= ACT =================
@@ -74,11 +73,13 @@ public class Xijinping extends Actor
         checkHeroAttack();
         drawHPBar();
 
-        if (state.equals("move")) {
+        if (state.equals("move"))
             moveTowardHero();
-        } else {
+        else
+        {
             autoShoot();
-            if (stateTimer.millisElapsed() > 2000) {
+            if (stateTimer.millisElapsed() > 2000)
+            {
                 stateTimer.mark();
                 state = "move";
             }
@@ -88,8 +89,8 @@ public class Xijinping extends Actor
     // ================= MOVEMENT =================
     private void moveTowardHero()
     {
+        if (getWorld().getObjects(Hero.class).isEmpty()) return;
         Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
-        if (hero == null) return;
 
         int dx = hero.getX() - getX();
         int dy = hero.getY() - getY();
@@ -99,7 +100,8 @@ public class Xijinping extends Actor
         else
             direction = (dy > 0) ? "down" : "up";
 
-        if (Math.hypot(dx, dy) < 120) {
+        if (Math.hypot(dx, dy) < 120)
+        {
             state = "pause";
             stateTimer.mark();
             return;
@@ -120,34 +122,30 @@ public class Xijinping extends Actor
         int baseRotation = getBulletRotation(direction);
         int[] spread = {-30, -15, 0, 15, 30};
 
-        for (int angle : spread) {
+        for (int angle : spread)
+        {
             Bullet b = new Bullet();
             getWorld().addObject(b, getX(), getY());
             b.setRotation(baseRotation + angle);
         }
     }
 
-    // ================= DAMAGE FROM HERO =================
+    // ================= DAMAGE =================
     private void checkHeroAttack()
     {
+        if (getWorld().getObjects(Hero.class).isEmpty()) return;
         Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
-        if (hero == null) return;
 
-        double distance = Math.hypot(
-            hero.getX() - getX(),
-            hero.getY() - getY()
-        );
+        double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
 
-        if (hero.attacking && distance <= 100 &&
+        if (hero.attacking && d <= 100 &&
             damageTimer.millisElapsed() > damageCooldown)
         {
             currentHP -= 20;
             damageTimer.mark();
 
-            if (currentHP <= 0) {
-                xijinpingvoice.stop();
+            if (currentHP <= 0)
                 getWorld().removeObject(this);
-            }
         }
     }
 
@@ -157,7 +155,8 @@ public class Xijinping extends Actor
         if (animationTimer.millisElapsed() < 200) return;
         animationTimer.mark();
 
-        switch (direction) {
+        switch (direction)
+        {
             case "left": setImage(walkLeft[imageIndex]); break;
             case "right": setImage(walkRight[imageIndex]); break;
             case "up": setImage(walkUp[imageIndex]); break;
@@ -187,21 +186,22 @@ public class Xijinping extends Actor
     // ================= PREVENT OVERLAP =================
     private void preventOverlap()
     {
+        if (getWorld().getObjects(Hero.class).isEmpty()) return;
         Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
-        if (hero == null) return;
 
         double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
-        if (d < 85 && d > 0) {
+        if (d < 85 && d > 0)
+        {
             int px = (int)((hero.getX() - getX()) / d * (85 - d));
             int py = (int)((hero.getY() - getY()) / d * (85 - d));
             hero.setLocation(hero.getX() + px, hero.getY() + py);
         }
     }
 
-    // ================= UTILS =================
     private int getBulletRotation(String dir)
     {
-        switch (dir) {
+        switch (dir)
+        {
             case "up": return 270;
             case "down": return 90;
             case "left": return 180;

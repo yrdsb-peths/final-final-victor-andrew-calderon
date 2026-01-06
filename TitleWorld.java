@@ -4,21 +4,21 @@ public class TitleWorld extends World
 {
     GreenfootImage dungeonImage = new GreenfootImage("images/dungeon.jpg");
     Label titleLabel = new Label("Fight For Democracy", 100);
+    Label instructionsLabel = new Label("Use ↑ ← ↓ → or WASD to move, SPACE to attack", 30);
 
     public TitleWorld()
     {
         super(900, 600, 1);
         setBackground(dungeonImage);
 
-        addObject(titleLabel, getWidth()/2, getHeight()/2);
-    }
+        // Title
+        addObject(titleLabel, getWidth()/2, getHeight()/3);
 
-    public void act()
-    {
-        if (Greenfoot.isKeyDown("space"))
-        {
-            MyWorld gameWorld = new MyWorld();
-            Greenfoot.setWorld(gameWorld);
-        }
+        // Instructions
+        addObject(instructionsLabel, getWidth()/2, getHeight()/2 + 200);
+
+        // Start button
+        StartButton startButton = new StartButton();
+        addObject(startButton, getWidth()/2, getHeight()/2 + 60);
     }
 }
