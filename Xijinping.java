@@ -31,7 +31,8 @@ public class Xijinping extends Actor
     // ===== SOUND (WAV ONLY) =====
     GreenfootSound xijinpingvoice =
         new GreenfootSound("Xi_Jinping_addressing_the_press_October_2022.mp3");
-
+        
+    
     // ================= CONSTRUCTOR =================
     public Xijinping()
     {
