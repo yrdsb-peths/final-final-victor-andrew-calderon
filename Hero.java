@@ -120,8 +120,22 @@ public class Hero extends Actor
             dx = (int)(dx / len * speed);
             dy = (int)(dy / len * speed);
 
-            setLocation(getX() + dx, getY() + dy);
+            int newX = getX() + dx;
+            int newY = getY() + dy;
 
+            // Prevent going off the world
+            World w = getWorld();
+            if (w != null) {
+                int halfWidth = getImage().getWidth() / 2;
+                int halfHeight = getImage().getHeight() / 2;
+
+                newX = Math.max(halfWidth, Math.min(w.getWidth() - halfWidth, newX));
+                newY = Math.max(halfHeight, Math.min(w.getHeight() - halfHeight, newY));
+            }
+
+            setLocation(newX, newY);
+
+            // Update direction
             if (Math.abs(dx) > Math.abs(dy))
                 direction = (dx > 0) ? "right" : "left";
             else
@@ -130,6 +144,7 @@ public class Hero extends Actor
             lastDirection = direction;
         }
     }
+
 
     // ================= ANIMATION =================
     private void animate()
@@ -177,8 +192,27 @@ public class Hero extends Actor
 
             if (currentHP <= 0) {
                 currentHP = 0;
+
+                World w = getWorld();
+                if (w != null) {
+                    // Remove Hero
+                    w.removeObject(this);
+
+                    // Remove Xi Jinping
+                    for (Xijinping xi : w.getObjects(Xijinping.class)) {
+                        w.removeObject(xi);
+                    }
+
+                    // Remove all bullets
+                    for (Bullet b : w.getObjects(Bullet.class)) {
+                        w.removeObject(b);
+                    }
+                }
+
+                // Stop the game if you want
                 Greenfoot.stop();
             }
         }
     }
+
 }

@@ -2,97 +2,190 @@ import greenfoot.*;
 
 public class KimJongUn extends Actor
 {
+    // ===== IMAGES =====
     GreenfootImage[] idle = new GreenfootImage[4];
-    GreenfootImage[] walk = new GreenfootImage[4];
+    GreenfootImage[] walkLeft = new GreenfootImage[4];
+    GreenfootImage[] walkRight = new GreenfootImage[4];
+    GreenfootImage[] walkUp = new GreenfootImage[4];
+    GreenfootImage[] walkDown = new GreenfootImage[4];
 
     int imageIndex = 0;
 
+    // ===== TIMERS =====
     SimpleTimer animationTimer = new SimpleTimer();
-    SimpleTimer shootTimer = new SimpleTimer();
+    SimpleTimer shootingTimer = new SimpleTimer();
+    SimpleTimer stateTimer = new SimpleTimer();
     SimpleTimer damageTimer = new SimpleTimer();
 
-    int maxHP = 350;
-    int currentHP = 350;
+    // ===== STATE =====
+    String direction = "idle";
+    String state = "move";
+
     int speed = 5;
 
-    GreenfootSound kimVoice =
-        new GreenfootSound("kim_jong_un_speech.wav");
+    // ===== HP =====
+    int maxHP = 350;
+    int currentHP = 350;
+    int damageCooldown = 400;
 
+    // ===== SOUND =====
+    GreenfootSound kimVoice = new GreenfootSound("game-start-317318.mp3");
+
+    // ===== DEAD FLAG =====
+    boolean dead = false;
+
+    // ================= CONSTRUCTOR =================
     public KimJongUn()
     {
-        for (int i = 0; i < 4; i++) {
-            idle[i] = new GreenfootImage("images/kim_idle/tile" + i + ".png");
+        for (int i = 0; i < 4; i++)
+        {
+            idle[i] = new GreenfootImage("images/kimjongun_idle/tile" + i + ".png");
             idle[i].scale(90, 140);
 
-            walk[i] = new GreenfootImage("images/kim_walk/tile" + i + ".png");
-            walk[i].scale(90, 140);
+            walkLeft[i] = new GreenfootImage("images/kimjongun_walkLeft/tile" + i + ".png");
+            walkLeft[i].scale(90, 140);
+
+            walkRight[i] = new GreenfootImage("images/kimjongun_walkRight/tile" + i + ".png");
+            walkRight[i].scale(90, 140);
+
+            walkUp[i] = new GreenfootImage("images/kimjongun_walkUp/tile" + i + ".png");
+            walkUp[i].scale(90, 140);
+
+            walkDown[i] = new GreenfootImage("images/kimjongun_walkDown/tile" + i + ".png");
+            walkDown[i].scale(90, 140);
         }
 
         setImage(idle[0]);
+        shootingTimer.mark();
+        stateTimer.mark();
+        damageTimer.mark();
         kimVoice.setVolume(90);
     }
 
+    // ================= START SOUND =================
     public void addedToWorld(World w)
     {
         kimVoice.play();
     }
 
+    // ================= ACT =================
     public void act()
     {
+        if (dead) return; // stop if dead
+
         animate();
-        moveTowardHero();
-        shoot();
+        preventOverlap();
         checkHeroAttack();
+        if (dead) return; // stop immediately if died
+
         drawHPBar();
+
+        if (state.equals("move"))
+            moveTowardHero();
+        else
+        {
+            autoShoot();
+            if (stateTimer.millisElapsed() > 2000)
+            {
+                stateTimer.mark();
+                state = "move";
+            }
+        }
     }
 
     // ================= MOVEMENT =================
     private void moveTowardHero()
     {
-        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
-        if (hero == null) return;
+        if (getWorld().getObjects(Hero.class).isEmpty()) return;
+        Hero hero = getWorld().getObjects(Hero.class).get(0);
 
         int dx = hero.getX() - getX();
         int dy = hero.getY() - getY();
 
+        if (Math.abs(dx) > Math.abs(dy))
+            direction = (dx > 0) ? "right" : "left";
+        else
+            direction = (dy > 0) ? "down" : "up";
+
+        if (Math.hypot(dx, dy) < 120)
+        {
+            state = "pause";
+            stateTimer.mark();
+            return;
+        }
+
         setLocation(
-            getX() + Integer.signum(dx) * speed,
-            getY() + Integer.signum(dy) * speed
+            getX() + Math.min(speed, Math.abs(dx)) * Integer.signum(dx),
+            getY() + Math.min(speed, Math.abs(dy)) * Integer.signum(dy)
         );
     }
 
     // ================= SHOOTING =================
-    private void shoot()
+    private void autoShoot()
     {
-        if (shootTimer.millisElapsed() < 200) return;
-        shootTimer.mark();
+        if (shootingTimer.millisElapsed() < 250) return;
+        shootingTimer.mark();
 
-        Bullet b = new Bullet();
-        getWorld().addObject(b, getX(), getY());
-        b.turnTowards(
-            getWorld().getObjects(Hero.class).get(0).getX(),
-            getWorld().getObjects(Hero.class).get(0).getY()
-        );
+        int baseRotation = getBulletRotation(direction);
+        int[] spread = {-40, -20, 0, 20, 40};
+
+        for (int angle : spread)
+        {
+            Bullet b = new Bullet();
+            getWorld().addObject(b, getX(), getY());
+            if (!getWorld().getObjects(Hero.class).isEmpty())
+            {
+                Hero hero = getWorld().getObjects(Hero.class).get(0);
+                b.turnTowards(hero.getX(), hero.getY());
+            }
+        }
     }
 
     // ================= DAMAGE =================
     private void checkHeroAttack()
     {
-        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
-        if (hero == null) return;
+        if (dead) return; // stop if dead
+        if (getWorld().getObjects(Hero.class).isEmpty()) return;
+        Hero hero = getWorld().getObjects(Hero.class).get(0);
 
-        if (hero.attacking &&
-            damageTimer.millisElapsed() > 400 &&
-            Math.hypot(hero.getX()-getX(), hero.getY()-getY()) < 100)
+        double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
+
+        if (hero.attacking && d <= 100 &&
+            damageTimer.millisElapsed() > damageCooldown)
         {
             currentHP -= 25;
             damageTimer.mark();
 
-            if (currentHP <= 0) {
-                kimVoice.stop();
-                getWorld().removeObject(this);
+            if (currentHP <= 0)
+            {
+                onDeath();
+                return;
             }
         }
+    }
+
+    // ================= DEATH EVENT =================
+    private void onDeath()
+    {
+        if (dead) return;
+        dead = true;
+
+        World w = getWorld();
+        if (w == null) return;
+
+        // Refill Hero HP
+        if (!w.getObjects(Hero.class).isEmpty())
+        {
+            Hero hero = w.getObjects(Hero.class).get(0);
+            hero.currentHP = hero.maxHP;
+        }
+
+        // Spawn Vladimir Putin
+        VladimirPutin putin = new VladimirPutin();
+        w.addObject(putin, getX(), getY());
+
+        kimVoice.stop();
+        w.removeObject(this);
     }
 
     // ================= ANIMATION =================
@@ -101,7 +194,15 @@ public class KimJongUn extends Actor
         if (animationTimer.millisElapsed() < 200) return;
         animationTimer.mark();
 
-        setImage(walk[imageIndex]);
+        switch (direction)
+        {
+            case "left": setImage(walkLeft[imageIndex]); break;
+            case "right": setImage(walkRight[imageIndex]); break;
+            case "up": setImage(walkUp[imageIndex]); break;
+            case "down": setImage(walkDown[imageIndex]); break;
+            default: setImage(idle[imageIndex]);
+        }
+
         imageIndex = (imageIndex + 1) % 4;
     }
 
@@ -119,5 +220,32 @@ public class KimJongUn extends Actor
         img.fillRect(0, 0, w, 6);
 
         setImage(img);
+    }
+
+    // ================= PREVENT OVERLAP =================
+    private void preventOverlap()
+    {
+        if (getWorld().getObjects(Hero.class).isEmpty()) return;
+        Hero hero = getWorld().getObjects(Hero.class).get(0);
+
+        double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
+        if (d < 85 && d > 0)
+        {
+            int px = (int)((hero.getX() - getX()) / d * (85 - d));
+            int py = (int)((hero.getY() - getY()) / d * (85 - d));
+            hero.setLocation(hero.getX() + px, hero.getY() + py);
+        }
+    }
+
+    private int getBulletRotation(String dir)
+    {
+        switch (dir)
+        {
+            case "up": return 270;
+            case "down": return 90;
+            case "left": return 180;
+            case "right": return 0;
+            default: return 0;
+        }
     }
 }

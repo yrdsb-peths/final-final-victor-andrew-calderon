@@ -7,6 +7,7 @@ public class MyWorld extends World
 
     boolean winPlayed = false;
     boolean gameOverPlayed = false;
+    boolean kimSpawned = false; // Track if KimJongUn is spawned
 
     public MyWorld()
     {
@@ -23,31 +24,41 @@ public class MyWorld extends World
         checkGameOver();
     }
 
-    // ===== WIN =====
-    private void checkWin()
+    // Spawn KimJongUn when called by Xijinping
+    public void spawnKim(int x, int y)
     {
-        if (getObjects(Xijinping.class).isEmpty() && !winPlayed)
+        if (!kimSpawned)
         {
-            winPlayed = true;
-            clearBullets();          // ✅ REMOVE ALL BULLETS
-            winSound.play();
-            Greenfoot.stop();        // or switch to WinWorld
+            kimSpawned = true;
+            addObject(new KimJongUn(), x, y);
         }
     }
 
-    // ===== GAME OVER =====
+    // Win condition: all bosses gone
+    private void checkWin()
+    {
+        if (getObjects(Xijinping.class).isEmpty() &&
+            getObjects(KimJongUn.class).isEmpty() &&
+            !winPlayed)
+        {
+            winPlayed = true;
+            clearBullets();
+            winSound.play();
+            Greenfoot.stop();
+        }
+    }
+
     private void checkGameOver()
     {
         if (getObjects(Hero.class).isEmpty() && !gameOverPlayed)
         {
             gameOverPlayed = true;
-            clearBullets();          // ✅ REMOVE ALL BULLETS
+            clearBullets();
             gameOverSound.play();
-            Greenfoot.stop();        // or switch to GameOverWorld
+            Greenfoot.stop();
         }
     }
 
-    // ===== BULLET CLEANUP =====
     private void clearBullets()
     {
         removeObjects(getObjects(Bullet.class));

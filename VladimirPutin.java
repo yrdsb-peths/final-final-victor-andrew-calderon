@@ -1,15 +1,15 @@
 import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
 
 /**
- * Write a description of class VladmirPutin here.
+ * Write a description of class VladimirPutin here.
  * 
  * @author (your name) 
  * @version (a version number or a date)
  */
-public class VladmirPutin extends Actor
+public class VladimirPutin extends Actor
 {
     /**
-     * Act - do whatever the VladmirPutin wants to do. This method is called whenever
+     * Act - do whatever the VladimirPutin wants to do. This method is called whenever
      * the 'Act' or 'Run' button gets pressed in the environment.
      */
     public void act()

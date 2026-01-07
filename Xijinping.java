@@ -31,6 +31,9 @@ public class Xijinping extends Actor
     // ===== SOUND =====
     GreenfootSound startSound = new GreenfootSound("game-start-317318.mp3");
 
+    // ===== DEAD FLAG =====
+    boolean dead = false;
+
     // ================= CONSTRUCTOR =================
     public Xijinping()
     {
@@ -68,9 +71,13 @@ public class Xijinping extends Actor
     // ================= ACT =================
     public void act()
     {
+        if (dead) return; // stop everything if dead
+
         animate();
         preventOverlap();
         checkHeroAttack();
+        if (dead) return; // stop immediately if died during attack check
+
         drawHPBar();
 
         if (state.equals("move"))
@@ -90,7 +97,7 @@ public class Xijinping extends Actor
     private void moveTowardHero()
     {
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
-        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
+        Hero hero = getWorld().getObjects(Hero.class).get(0);
 
         int dx = hero.getX() - getX();
         int dy = hero.getY() - getY();
@@ -133,8 +140,10 @@ public class Xijinping extends Actor
     // ================= DAMAGE =================
     private void checkHeroAttack()
     {
+        if (dead) return; // stop if dead
+
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
-        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
+        Hero hero = getWorld().getObjects(Hero.class).get(0);
 
         double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
 
@@ -145,9 +154,37 @@ public class Xijinping extends Actor
             damageTimer.mark();
 
             if (currentHP <= 0)
-                getWorld().removeObject(this);
+            {
+                onDeath();
+                return; // STOP further code this frame
+            }
         }
     }
+
+    // ================= DEATH EVENT =================
+    private void onDeath()
+{
+    if (dead) return;
+    dead = true;
+
+    World w = getWorld();
+    if (w == null) return;
+
+    // Refill Hero HP
+    if (!w.getObjects(Hero.class).isEmpty())
+    {
+        Hero hero = w.getObjects(Hero.class).get(0);
+        hero.currentHP = hero.maxHP;
+    }
+
+    // Schedule KimJongUn to spawn next act
+    if (w instanceof MyWorld) {
+        ((MyWorld)w).spawnKim(getX(), getY());
+    }
+
+    startSound.stop();
+    w.removeObject(this);
+}
 
     // ================= ANIMATION =================
     private void animate()
@@ -187,7 +224,7 @@ public class Xijinping extends Actor
     private void preventOverlap()
     {
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
-        Hero hero = (Hero)getWorld().getObjects(Hero.class).get(0);
+        Hero hero = getWorld().getObjects(Hero.class).get(0);
 
         double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
         if (d < 85 && d > 0)
