@@ -90,6 +90,7 @@ public class Hero extends Actor
         movePlayer();
         checkBulletHit();
         animate();
+        checkDeath();
     }
 
     // ================= INPUT =================
@@ -214,5 +215,25 @@ public class Hero extends Actor
             }
         }
     }
+    
+    private void checkDeath()
+{
+    if (currentHP <= 0)
+    {
+        World w = getWorld();
+        if (w == null) return;
+
+        if (w instanceof MyWorld)
+        {
+            ((MyWorld)w).triggerGameOver();
+        }
+
+        // DO NOT call getWorld() again
+        if (getWorld() != null)
+        {
+            w.removeObject(this);
+        }
+    }
+}
 
 }

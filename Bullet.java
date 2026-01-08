@@ -2,20 +2,30 @@ import greenfoot.*;
 
 public class Bullet extends Actor
 {
-    private int speed = 4;
+    // ================= CONSTANTS =================
+    private static final int SPEED = 4;
+    private static final int IMAGE_SIZE = 40;
 
-    public Bullet() {
+    public Bullet() 
+    {
+        setupImage();
+    }
+
+    private void setupImage()
+    {
         GreenfootImage img = new GreenfootImage("images/bullet.png");
-        img.scale(40, 40);
+        img.scale(IMAGE_SIZE, IMAGE_SIZE);
         setImage(img);
     }
 
     public void act()
     {
-        move(speed);   // ✅ straight movement only
+        move(SPEED); // Move straight
 
-        if (isAtEdge()) {
-            getWorld().removeObject(this);
+        // Remove bullet if it reaches the edge
+        World world = getWorld();
+        if (world != null && isAtEdge()) {
+            world.removeObject(this);
         }
     }
 }

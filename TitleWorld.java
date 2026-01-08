@@ -2,23 +2,49 @@ import greenfoot.*;
 
 public class TitleWorld extends World
 {
-    GreenfootImage dungeonImage = new GreenfootImage("images/dungeon.jpg");
-    Label titleLabel = new Label("Fight For Democracy", 100);
-    Label instructionsLabel = new Label("Use ↑ ← ↓ → or WASD to move, SPACE to attack", 30);
+    // ================= CONSTANTS =================
+    private static final int WORLD_WIDTH = 900;
+    private static final int WORLD_HEIGHT = 600;
+
+    private static final int TITLE_SIZE = 100;
+    private static final int INSTRUCTION_SIZE = 30;
+
+    // ================= ASSETS =================
+    private GreenfootImage background;
+
+    // ================= UI =================
+    private Label titleLabel;
+    private Label instructionsLabel;
+    private StartButton startButton;
 
     public TitleWorld()
     {
-        super(900, 600, 1);
-        setBackground(dungeonImage);
+        super(WORLD_WIDTH, WORLD_HEIGHT, 1);
 
-        // Title
-        addObject(titleLabel, getWidth()/2, getHeight()/3);
+        setupBackground();
+        setupUI();
+    }
 
-        // Instructions
-        addObject(instructionsLabel, getWidth()/2, getHeight()/2 + 200);
+    // ================= SETUP =================
 
-        // Start button
-        StartButton startButton = new StartButton();
-        addObject(startButton, getWidth()/2, getHeight()/2 + 60);
+    private void setupBackground()
+    {
+        background = new GreenfootImage("images/dungeon.jpg");
+        setBackground(background);
+    }
+
+    private void setupUI()
+    {
+        titleLabel = new Label("Fight For Democracy", TITLE_SIZE);
+        addObject(titleLabel, getWidth() / 2, getHeight() / 3);
+
+        instructionsLabel = new Label(
+            "Use ↑ ← ↓ → or WASD to move, SPACE to attack",
+            INSTRUCTION_SIZE
+        );
+        addObject(instructionsLabel, getWidth() / 2, getHeight() / 2 + 200);
+
+        startButton = new StartButton();
+        addObject(startButton, getWidth() / 2, getHeight() / 2 + 60);
     }
 }

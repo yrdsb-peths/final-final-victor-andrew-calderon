@@ -170,15 +170,16 @@ public class Xijinping extends Actor
     World w = getWorld();
     if (w == null) return;
 
-    // Refill Hero HP
+    // Heal hero
     if (!w.getObjects(Hero.class).isEmpty())
     {
         Hero hero = w.getObjects(Hero.class).get(0);
         hero.currentHP = hero.maxHP;
     }
 
-    // Schedule KimJongUn to spawn next act
-    if (w instanceof MyWorld) {
+    // Spawn Kim
+    if (w instanceof MyWorld)
+    {
         ((MyWorld)w).spawnKim(getX(), getY());
     }
 
