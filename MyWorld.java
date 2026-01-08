@@ -22,6 +22,7 @@ public class MyWorld extends World
 
     // ================= FLAGS =================
     private boolean kimSpawned = false;
+    private boolean vladimirSpawned = false;
 
     public MyWorld()
     {
@@ -81,6 +82,13 @@ public class MyWorld extends World
 
         kimSpawned = true;
         addObject(new KimJongUn(), x, y);
+    }
+    
+    public void spawnVladimir(int x, int y)
+    {
+        if (vladimirSpawned) return;
+        vladimirSpawned = true;
+        addObject(new VladimirPutin(), x, y);
     }
 
     // ================= HELPERS =================
