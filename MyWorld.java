@@ -19,6 +19,7 @@ public class MyWorld extends World
     // ================= SOUNDS =================
     private GreenfootSound winSound;
     private GreenfootSound gameOverSound;
+    private GreenfootSound bgm;
 
     // ================= FLAGS =================
     private boolean kimSpawned = false;
@@ -45,9 +46,13 @@ public class MyWorld extends World
     {
         winSound = new GreenfootSound("winner-game-sound-404167.mp3");
         gameOverSound = new GreenfootSound("game-over-417465.mp3");
+        bgm = new GreenfootSound("the-shape-of-disorder-410788.mp3");
 
         winSound.setVolume(90);
         gameOverSound.setVolume(90);
+        bgm.setVolume(60);
+        
+        bgm.playLoop(); // 🎵 start background music
     }
 
     // ================= STATE TRIGGERS =================
@@ -55,6 +60,7 @@ public class MyWorld extends World
     public void triggerGameOver()
     {
         changeState(GameState.LOSE);
+        bgm.stop(); // 🛑 stop BGM
         Greenfoot.setWorld(new GameOverWorld());
         gameOverSound.play();
     }
@@ -62,6 +68,7 @@ public class MyWorld extends World
     public void triggerWin()
     {
         changeState(GameState.WIN);
+        bgm.stop(); // 🛑 stop BGM
         Greenfoot.setWorld(new WinWorld());
         winSound.play();
     }

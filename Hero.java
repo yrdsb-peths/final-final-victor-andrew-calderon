@@ -30,6 +30,9 @@ public class Hero extends Actor
     // ===== MOVEMENT =====
     int moveSpeed = 5;
     int attackMoveSpeed = 2;
+    
+    // ===== SOUND =====
+    GreenfootSound attackSound = new GreenfootSound("sword-slice-393847.mp3");
 
     // ================= CONSTRUCTOR =================
     public Hero()
@@ -87,6 +90,9 @@ public class Hero extends Actor
             attacking = true;
             attackTimer.mark();
             imageIndex = 0;
+            
+            attackSound.stop();   // prevent overlap
+            attackSound.play();   // 🔊 play attack sound
         }
     }
 
