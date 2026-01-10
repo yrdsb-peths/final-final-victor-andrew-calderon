@@ -5,7 +5,7 @@ public class Potion extends Actor
     public Potion()
     {
         setImage(new GreenfootImage("images/potion.png"));
-        getImage().scale(30, 30);
+        getImage().scale(60, 60);
     }
 
     public void act()
