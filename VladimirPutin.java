@@ -1,6 +1,6 @@
 import greenfoot.*;
 
-public class VladimirPutin extends Actor
+public class VladimirPutin extends Enemy
 {
     // ===== IMAGES =====
     GreenfootImage[] idle = new GreenfootImage[4];

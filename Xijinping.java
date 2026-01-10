@@ -1,6 +1,6 @@
 import greenfoot.*;
 
-public class Xijinping extends Actor
+public class Xijinping extends Enemy
 {
     // ===== IMAGES =====
     GreenfootImage[] idle = new GreenfootImage[4];

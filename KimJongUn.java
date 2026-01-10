@@ -1,6 +1,6 @@
 import greenfoot.*;
 
-public class KimJongUn extends Actor
+public class KimJongUn extends Enemy
 {
     // ===== IMAGES =====
     GreenfootImage[] idle = new GreenfootImage[4];
