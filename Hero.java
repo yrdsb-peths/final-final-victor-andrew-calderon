@@ -20,6 +20,7 @@ public class Hero extends Actor
     boolean invincible = false;
 
     int attackDuration = 400;
+    int shieldDuration = 0;   // ⭐ FIX: shield duration
     String direction = "down", lastDirection = "down";
 
     // ===== HP =====
@@ -30,7 +31,7 @@ public class Hero extends Actor
     // ===== MOVEMENT =====
     int moveSpeed = 5;
     int attackMoveSpeed = 2;
-    
+
     // ===== SOUND =====
     GreenfootSound attackSound = new GreenfootSound("sword-slice-393847.mp3");
 
@@ -59,19 +60,22 @@ public class Hero extends Actor
     // ================= ADDED =================
     public void addedToWorld(World w)
     {
-        setLocation(w.getWidth()/2, w.getHeight()/2);
+        setLocation(w.getWidth() / 2, w.getHeight() / 2);
         w.addObject(new HeroHPBar(this), getX(), getY() - 45);
 
         // Spawn immunity
-        invincible = true;
-        invincibleTimer.mark();
+        activateShield(1000);
     }
 
     // ================= ACT =================
     public void act()
     {
-        if (invincible && invincibleTimer.millisElapsed() > 1000)
+        // Handle invincibility timing
+        if (invincible && invincibleTimer.millisElapsed() > shieldDuration)
+        {
             invincible = false;
+            shieldDuration = 0;
+        }
 
         handleAttackInput();
         movePlayer();
@@ -90,9 +94,9 @@ public class Hero extends Actor
             attacking = true;
             attackTimer.mark();
             imageIndex = 0;
-            
-            attackSound.stop();   // prevent overlap
-            attackSound.play();   // 🔊 play attack sound
+
+            attackSound.stop();
+            attackSound.play();
         }
     }
 
@@ -109,25 +113,25 @@ public class Hero extends Actor
 
         if (dx != 0 || dy != 0)
         {
-            double len = Math.sqrt(dx*dx + dy*dy);
+            double len = Math.sqrt(dx * dx + dy * dy);
             dx = (int)(dx / len * speed);
             dy = (int)(dy / len * speed);
 
             World w = getWorld();
             if (w != null)
             {
-                int hw = getImage().getWidth()/2;
-                int hh = getImage().getHeight()/2;
+                int hw = getImage().getWidth() / 2;
+                int hh = getImage().getHeight() / 2;
 
                 setLocation(
-                    Math.max(hw, Math.min(w.getWidth()-hw, getX()+dx)),
-                    Math.max(hh, Math.min(w.getHeight()-hh, getY()+dy))
+                    Math.max(hw, Math.min(w.getWidth() - hw, getX() + dx)),
+                    Math.max(hh, Math.min(w.getHeight() - hh, getY() + dy))
                 );
             }
 
             direction = Math.abs(dx) > Math.abs(dy)
-                    ? (dx>0?"right":"left")
-                    : (dy>0?"down":"up");
+                    ? (dx > 0 ? "right" : "left")
+                    : (dy > 0 ? "down" : "up");
             lastDirection = direction;
         }
     }
@@ -154,7 +158,7 @@ public class Hero extends Actor
 
     private GreenfootImage getDirImage(GreenfootImage[][] arr, String dir, int idx)
     {
-        int d = switch(dir)
+        int d = switch (dir)
         {
             case "left" -> 0;
             case "right" -> 1;
@@ -168,7 +172,6 @@ public class Hero extends Actor
     private void checkBulletHit()
     {
         if (invincible) return;
-
         if (damageTimer.millisElapsed() < damageCooldown) return;
 
         Bullet b = (Bullet)getOneIntersectingObject(Bullet.class);
@@ -178,8 +181,7 @@ public class Hero extends Actor
             damageTimer.mark();
             getWorld().removeObject(b);
 
-            invincible = true;
-            invincibleTimer.mark();
+            activateShield(500); // brief hit invincibility
 
             if (currentHP < 0) currentHP = 0;
         }
@@ -189,12 +191,23 @@ public class Hero extends Actor
     private void checkDeath()
     {
         World w = getWorld();
-        if (w == null) return;
-
         if (w instanceof MyWorld)
             ((MyWorld)w).triggerGameOver();
 
         w.removeObject(this);
+    }
+    
+    public void heal(int amount)
+{
+    currentHP = Math.min(maxHP, currentHP + amount);
+}
+
+    // ================= POWER UPS =================
+    public void activateShield(int duration)
+    {
+        invincible = true;
+        shieldDuration = duration;
+        invincibleTimer.mark();
     }
 
     public void refillHP()
@@ -202,4 +215,16 @@ public class Hero extends Actor
         currentHP = maxHP;
     }
     
+    boolean shielded = false;
+SimpleTimer shieldTimer = new SimpleTimer();
+
+
+public boolean isShielded()
+{
+    if (shielded && shieldTimer.millisElapsed() > 5000)
+        shielded = false;
+
+    return shielded;
+}
+
 }
