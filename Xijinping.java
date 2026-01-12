@@ -129,7 +129,7 @@ public class Xijinping extends Actor
         shootingTimer.mark();
 
         int baseRotation = getBulletRotation(direction);
-        int[] spread = {-30, -15, 0, 15, 30};
+        int[] spread = {-180, -150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150, 180};
 
         for (int angle : spread)
         {

@@ -84,7 +84,7 @@ public class VladimirPutin extends Actor
     public void act()
     {
         // Add your action code here.
-        if (dead) return;
+        if (dead || getWorld() == null) return;
 
         animate();
         preventOverlap();
@@ -137,6 +137,8 @@ public class VladimirPutin extends Actor
     // ================= SHOOTING =================
     private void autoShoot()
     {
+        if (getWorld() == null) return;
+        
         if (shootingTimer.millisElapsed() < 300) return;
         shootingTimer.mark();
 
@@ -144,7 +146,7 @@ public class VladimirPutin extends Actor
         Hero hero = getWorld().getObjects(Hero.class).get(0);
 
         int baseRotation = getBulletRotation(direction);
-        int[] spread = {-30, -15, 0, 15, 30};
+        int[] spread = {-180, -150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150, 180};
 
         for (int angle : spread)
         {
@@ -186,6 +188,7 @@ public class VladimirPutin extends Actor
         bossSound.stop();
         World w = getWorld();
         if (w != null) w.removeObject(this);
+        Greenfoot.setWorld(new WinWorld());
     }
 
     // ================= ANIMATION =================
