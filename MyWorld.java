@@ -26,7 +26,6 @@ public class MyWorld extends World
 
     // ================= FLAGS =================
     private boolean kimSpawned = false;
-    private boolean vladimirSpawned = false;
 
     public MyWorld()
     {
@@ -142,13 +141,6 @@ if (Greenfoot.getRandomNumber(500) == 0)
 
         kimSpawned = true;
         addObject(new KimJongUn(), x, y);
-    }
-    
-    public void spawnVladimir(int x, int y)
-    {
-        if (vladimirSpawned) return;
-        vladimirSpawned = true;
-        addObject(new VladimirPutin(), x, y);
     }
 
     // ================= HELPERS =================

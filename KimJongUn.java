@@ -21,11 +21,11 @@ public class KimJongUn extends Enemy
     String direction = "idle";
     String state = "move";
 
-    int speed = 4;
+    int speed = 5;
 
     // ===== HP =====
-    int maxHP = 250;
-    int currentHP = 250;
+    int maxHP = 350;
+    int currentHP = 350;
     int damageCooldown = 400;
 
     // ===== SOUND =====
@@ -59,7 +59,6 @@ public class KimJongUn extends Enemy
         shootingTimer.mark();
         stateTimer.mark();
         damageTimer.mark();
-
         kimVoice.setVolume(90);
     }
 
@@ -72,12 +71,12 @@ public class KimJongUn extends Enemy
     // ================= ACT =================
     public void act()
     {
-        if (dead) return;
+        if (dead) return; // stop if dead
 
         animate();
         preventOverlap();
         checkHeroAttack();
-        if (dead) return;
+        if (dead) return; // stop immediately if died
 
         drawHPBar();
 
@@ -103,9 +102,10 @@ public class KimJongUn extends Enemy
         int dx = hero.getX() - getX();
         int dy = hero.getY() - getY();
 
-        direction = Math.abs(dx) > Math.abs(dy)
-            ? (dx > 0 ? "right" : "left")
-            : (dy > 0 ? "down" : "up");
+        if (Math.abs(dx) > Math.abs(dy))
+            direction = (dx > 0) ? "right" : "left";
+        else
+            direction = (dy > 0) ? "down" : "up";
 
         if (Math.hypot(dx, dy) < 120)
         {
@@ -123,36 +123,37 @@ public class KimJongUn extends Enemy
     // ================= SHOOTING =================
     private void autoShoot()
     {
-        if (shootingTimer.millisElapsed() < 300) return;
+        if (shootingTimer.millisElapsed() < 250) return;
         shootingTimer.mark();
 
-        if (getWorld().getObjects(Hero.class).isEmpty()) return;
-        Hero hero = getWorld().getObjects(Hero.class).get(0);
-
         int baseRotation = getBulletRotation(direction);
-        int[] spread = {-30, -15, 0, 15, 30};
+        int[] spread = {-40, -20, 0, 20, 40};
 
         for (int angle : spread)
         {
             Bullet b = new Bullet();
             getWorld().addObject(b, getX(), getY());
-            b.setRotation(baseRotation + angle);
+            if (!getWorld().getObjects(Hero.class).isEmpty())
+            {
+                Hero hero = getWorld().getObjects(Hero.class).get(0);
+                b.turnTowards(hero.getX(), hero.getY());
+            }
         }
     }
 
     // ================= DAMAGE =================
     private void checkHeroAttack()
     {
-        if (dead) return;
+        if (dead) return; // stop if dead
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
-
         Hero hero = getWorld().getObjects(Hero.class).get(0);
+
         double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
 
         if (hero.attacking && d <= 100 &&
             damageTimer.millisElapsed() > damageCooldown)
         {
-            currentHP -= 20;
+            currentHP -= 25;
             damageTimer.mark();
 
             if (currentHP <= 0)
@@ -169,16 +170,22 @@ public class KimJongUn extends Enemy
         if (dead) return;
         dead = true;
 
-        kimVoice.stop();
         World w = getWorld();
-        if (w != null)
-        {
-            // Spawn Vladimir Putin at Kim's position
-            w.addObject(new VladimirPutin(), getX(), getY());
+        if (w == null) return;
 
-            // Remove Kim
-            w.removeObject(this);
+        // Refill Hero HP
+        if (!w.getObjects(Hero.class).isEmpty())
+        {
+            Hero hero = w.getObjects(Hero.class).get(0);
+            hero.currentHP = hero.maxHP;
         }
+
+        // Spawn Vladimir Putin
+        VladimirPutin putin = new VladimirPutin();
+        w.addObject(putin, getX(), getY());
+
+        kimVoice.stop();
+        w.removeObject(this);
     }
 
     // ================= ANIMATION =================
