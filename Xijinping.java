@@ -1,6 +1,6 @@
 import greenfoot.*;
 
-public class Xijinping extends Enemy
+public class Xijinping extends Actor
 {
     // ===== IMAGES =====
     GreenfootImage[] idle = new GreenfootImage[4];
@@ -71,17 +71,19 @@ public class Xijinping extends Enemy
     // ================= ACT =================
     public void act()
     {
-        if (dead) return; // stop everything if dead
+        if (dead) return;
 
         animate();
         preventOverlap();
         checkHeroAttack();
-        if (dead) return; // stop immediately if died during attack check
+        if (dead) return;
 
         drawHPBar();
 
         if (state.equals("move"))
+        {
             moveTowardHero();
+        }
         else
         {
             autoShoot();
@@ -140,8 +142,6 @@ public class Xijinping extends Enemy
     // ================= DAMAGE =================
     private void checkHeroAttack()
     {
-        if (dead) return; // stop if dead
-
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
         Hero hero = getWorld().getObjects(Hero.class).get(0);
 
@@ -156,36 +156,35 @@ public class Xijinping extends Enemy
             if (currentHP <= 0)
             {
                 onDeath();
-                return; // STOP further code this frame
             }
         }
     }
 
     // ================= DEATH EVENT =================
     private void onDeath()
-{
-    if (dead) return;
-    dead = true;
-
-    World w = getWorld();
-    if (w == null) return;
-
-    // Heal hero
-    if (!w.getObjects(Hero.class).isEmpty())
     {
-        Hero hero = w.getObjects(Hero.class).get(0);
-        hero.currentHP = hero.maxHP;
-    }
+        if (dead) return;
+        dead = true;
 
-    // Spawn Kim
-    if (w instanceof MyWorld)
-    {
-        ((MyWorld)w).spawnKim(getX(), getY());
-    }
+        World w = getWorld();
+        if (w == null) return;
 
-    startSound.stop();
-    w.removeObject(this);
-}
+        // Heal hero
+        if (!w.getObjects(Hero.class).isEmpty())
+        {
+            Hero hero = w.getObjects(Hero.class).get(0);
+            hero.currentHP = hero.maxHP;
+        }
+
+        // Spawn Kim Jong Un
+        if (w instanceof MyWorld)
+        {
+            ((MyWorld) w).spawnKim(getX(), getY());
+        }
+
+        startSound.stop();
+        w.removeObject(this);
+    }
 
     // ================= ANIMATION =================
     private void animate()
@@ -236,6 +235,7 @@ public class Xijinping extends Enemy
         }
     }
 
+    // ================= BULLET ROTATION =================
     private int getBulletRotation(String dir)
     {
         switch (dir)

@@ -5,9 +5,6 @@ public class MyWorld extends World
     // ================= CONSTANTS =================
     private static final int WORLD_WIDTH = 900;
     private static final int WORLD_HEIGHT = 600;
-    
-    public int killCount = 0;
-    public final int WIN_KILLS = 100;
 
     // ================= GAME STATE =================
     public enum GameState
@@ -26,6 +23,7 @@ public class MyWorld extends World
 
     // ================= FLAGS =================
     private boolean kimSpawned = false;
+    private boolean vladimirSpawned = false;
 
     public MyWorld()
     {
@@ -33,56 +31,6 @@ public class MyWorld extends World
         setupWorld();
         setupSounds();
     }
-    
-    public void enemyKilled()
-{
-    killCount++;
-
-    if (killCount >= WIN_KILLS)
-    {
-        Greenfoot.setWorld(new WinWorld());
-    }
-}
-
-private void spawnEnemies()
-{
-    int maxEnemies = 10;
-
-    if (getObjects(Enemy.class).size() >= maxEnemies) return;
-
-    int choice = Greenfoot.getRandomNumber(3);
-    Enemy e;
-
-    if (choice == 0) e = new VladimirPutin();
-    else if (choice == 1) e = new Xijinping();
-    else e = new KimJongUn();
-
-    int x = Greenfoot.getRandomNumber(getWidth());
-    int y = Greenfoot.getRandomNumber(getHeight());
-
-    addObject(e, x, y);
-}
-
-
-public void act()
-{
-    if (Greenfoot.getRandomNumber(300) == 0)
-{
-    addObject(new Potion(),
-        Greenfoot.getRandomNumber(getWidth()),
-        Greenfoot.getRandomNumber(getHeight()));
-}
-
-if (Greenfoot.getRandomNumber(500) == 0)
-{
-    addObject(new Shell(),
-        Greenfoot.getRandomNumber(getWidth()),
-        Greenfoot.getRandomNumber(getHeight()));
-}
-
-}
-
-
 
     // ================= SETUP =================
 
@@ -141,6 +89,13 @@ if (Greenfoot.getRandomNumber(500) == 0)
 
         kimSpawned = true;
         addObject(new KimJongUn(), x, y);
+    }
+    
+    public void spawnVladimir(int x, int y)
+    {
+        if (vladimirSpawned) return;
+        vladimirSpawned = true;
+        addObject(new VladimirPutin(), x, y);
     }
 
     // ================= HELPERS =================
