@@ -18,10 +18,19 @@ public class Xijinping extends Actor
     SimpleTimer damageTimer = new SimpleTimer();
 
     // ===== STATE =====
-    String direction = "idle";
-    String state = "move";
+    String direction = "down";
+    String state = "move"; // move = vulnerable, shoot = invincible
 
     int speed = 4;
+
+    // ===== SMOOTH POSITION =====
+    double preciseX;
+    double preciseY;
+
+    // ===== RANDOM MOVE TARGET =====
+    int targetX;
+    int targetY;
+    boolean hasTarget = false;
 
     // ===== HP =====
     int maxHP = 250;
@@ -31,7 +40,6 @@ public class Xijinping extends Actor
     // ===== SOUND =====
     GreenfootSound startSound = new GreenfootSound("game-start-317318.mp3");
 
-    // ===== DEAD FLAG =====
     boolean dead = false;
 
     // ================= CONSTRUCTOR =================
@@ -61,9 +69,11 @@ public class Xijinping extends Actor
         damageTimer.mark();
     }
 
-    // ================= START SOUND =================
     public void addedToWorld(World w)
     {
+        preciseX = getX();
+        preciseY = getY();
+
         startSound.setVolume(90);
         startSound.play();
     }
@@ -74,74 +84,122 @@ public class Xijinping extends Actor
         if (dead) return;
 
         animate();
-        preventOverlap();
-        checkHeroAttack();
-        if (dead) return;
 
-        drawHPBar();
-
-        if (state.equals("move"))
+        if (state.equals("shoot"))
         {
-            moveTowardHero();
-        }
-        else
-        {
+            // Face hero during shooting
+            faceHeroDirection();
             autoShoot();
-            if (stateTimer.millisElapsed() > 2000)
+
+            if (stateTimer.millisElapsed() > 3000)
             {
-                stateTimer.mark();
                 state = "move";
+                hasTarget = false;
+                stateTimer.mark();
             }
         }
+        else // MOVE STATE
+        {
+            // Move to random position (axis-aligned)
+            moveAxisAligned();
+            checkHeroAttack();
+
+            // Set direction based on movement (not hero)
+            setDirectionFacingMovement();
+
+            if (stateTimer.millisElapsed() > 2500)
+            {
+                state = "shoot";
+                stateTimer.mark();
+            }
+        }
+
+        drawHPBar();
     }
 
-    // ================= MOVEMENT =================
-    private void moveTowardHero()
+    // ================= FACE HERO =================
+    private void faceHeroDirection()
     {
+        if (getWorld().getObjects(Hero.class).isEmpty()) return;
+        Hero hero = getWorld().getObjects(Hero.class).get(0);
+
+        double dx = hero.getX() - getX();
+        double dy = hero.getY() - getY();
+
+        if (Math.abs(dx) > Math.abs(dy))
+            direction = (dx > 0) ? "right" : "left";
+        else
+            direction = (dy > 0) ? "down" : "up";
+    }
+
+    // ================= AXIS-ALIGNED RANDOM MOVEMENT =================
+    private void moveAxisAligned()
+    {
+        if (!hasTarget)
+        {
+            targetX = Greenfoot.getRandomNumber(getWorld().getWidth() - 100) + 50;
+            targetY = Greenfoot.getRandomNumber(getWorld().getHeight() - 100) + 50;
+            hasTarget = true;
+        }
+
+        double dx = targetX - preciseX;
+        double dy = targetY - preciseY;
+
+        // Move X first
+        if (Math.abs(dx) > 1)
+        {
+            preciseX += Math.signum(dx) * speed;
+        }
+        // Then move Y
+        else if (Math.abs(dy) > 1)
+        {
+            preciseY += Math.signum(dy) * speed;
+        }
+
+        setLocation((int)preciseX, (int)preciseY);
+    }
+
+    // ================= DIRECTION DURING MOVE =================
+    private void setDirectionFacingMovement()
+    {
+        double dx = targetX - preciseX;
+        double dy = targetY - preciseY;
+
+        if (Math.abs(dx) > Math.abs(dy))
+        {
+            direction = (dx > 0) ? "right" : "left";
+        }
+        else if (Math.abs(dy) > 1)
+        {
+            direction = (dy > 0) ? "down" : "up";
+        }
+        // If very close to target, keep current direction
+    }
+
+    // ================= SHOOTING =================
+    private void autoShoot()
+    {
+        if (shootingTimer.millisElapsed() < 400) return;
+        shootingTimer.mark();
+
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
         Hero hero = getWorld().getObjects(Hero.class).get(0);
 
         int dx = hero.getX() - getX();
         int dy = hero.getY() - getY();
 
-        if (Math.abs(dx) > Math.abs(dy))
-            direction = (dx > 0) ? "right" : "left";
-        else
-            direction = (dy > 0) ? "down" : "up";
+        int rotation = (int)Math.toDegrees(Math.atan2(dy, dx));
 
-        if (Math.hypot(dx, dy) < 120)
-        {
-            state = "pause";
-            stateTimer.mark();
-            return;
-        }
-
-        setLocation(
-            getX() + Math.min(speed, Math.abs(dx)) * Integer.signum(dx),
-            getY() + Math.min(speed, Math.abs(dy)) * Integer.signum(dy)
-        );
-    }
-
-    // ================= SHOOTING =================
-    private void autoShoot()
-    {
-        if (shootingTimer.millisElapsed() < 300) return;
-        shootingTimer.mark();
-
-        int baseRotation = getBulletRotation(direction);
-        int[] spread = {-180, -150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150, 180};
-
-        for (int angle : spread)
-        {
-            Bullet b = new Bullet();
-            getWorld().addObject(b, getX(), getY());
-            b.setRotation(baseRotation + angle);
-        }
+        Bullet b = new Bullet();
+        getWorld().addObject(b, getX(), getY());
+        b.setRotation(rotation);
     }
 
     // ================= DAMAGE =================
     private void checkHeroAttack()
     {
+        if (state.equals("shoot")) return; // INVINCIBLE
+
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
         Hero hero = getWorld().getObjects(Hero.class).get(0);
 
@@ -154,13 +212,11 @@ public class Xijinping extends Actor
             damageTimer.mark();
 
             if (currentHP <= 0)
-            {
                 onDeath();
-            }
         }
     }
 
-    // ================= DEATH EVENT =================
+    // ================= DEATH =================
     private void onDeath()
     {
         if (dead) return;
@@ -169,18 +225,14 @@ public class Xijinping extends Actor
         World w = getWorld();
         if (w == null) return;
 
-        // Heal hero
         if (!w.getObjects(Hero.class).isEmpty())
         {
             Hero hero = w.getObjects(Hero.class).get(0);
             hero.currentHP = hero.maxHP;
         }
 
-        // Spawn Kim Jong Un
         if (w instanceof MyWorld)
-        {
             ((MyWorld) w).spawnKim(getX(), getY());
-        }
 
         startSound.stop();
         w.removeObject(this);
@@ -218,33 +270,5 @@ public class Xijinping extends Actor
         img.fillRect(0, 0, w, 6);
 
         setImage(img);
-    }
-
-    // ================= PREVENT OVERLAP =================
-    private void preventOverlap()
-    {
-        if (getWorld().getObjects(Hero.class).isEmpty()) return;
-        Hero hero = getWorld().getObjects(Hero.class).get(0);
-
-        double d = Math.hypot(hero.getX() - getX(), hero.getY() - getY());
-        if (d < 85 && d > 0)
-        {
-            int px = (int)((hero.getX() - getX()) / d * (85 - d));
-            int py = (int)((hero.getY() - getY()) / d * (85 - d));
-            hero.setLocation(hero.getX() + px, hero.getY() + py);
-        }
-    }
-
-    // ================= BULLET ROTATION =================
-    private int getBulletRotation(String dir)
-    {
-        switch (dir)
-        {
-            case "up": return 270;
-            case "down": return 90;
-            case "left": return 180;
-            case "right": return 0;
-            default: return 0;
-        }
     }
 }
