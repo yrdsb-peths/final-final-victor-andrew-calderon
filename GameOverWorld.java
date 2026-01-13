@@ -2,18 +2,17 @@ import greenfoot.*;
 
 public class GameOverWorld extends World
 {
-    // Constants
+    // ===== CONSTANTS =====
     private static final int WORLD_WIDTH = 900;
     private static final int WORLD_HEIGHT = 600;
     private static final int TEXT_SIZE = 100;
-    private static final int BUTTON_SIZE = 50;
     private static final int SOUND_VOLUME = 90;
 
-    // Sounds
+    // ===== SOUND =====
     private GreenfootSound gameOverSound;
 
-    // UI
-    private Button restartButton;
+    // ===== UI =====
+    private ImageButton restartButton;
 
     public GameOverWorld()
     {
@@ -34,7 +33,7 @@ public class GameOverWorld extends World
         Label title = new Label("GAME OVER", TEXT_SIZE);
         addObject(title, getWidth() / 2, getHeight() / 2 - 50);
 
-        restartButton = new Button("Restart", BUTTON_SIZE);
+        restartButton = new ImageButton("images/restartButton.png");
         addObject(restartButton, getWidth() / 2, getHeight() / 2 + 100);
     }
 
