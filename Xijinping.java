@@ -20,6 +20,10 @@ public class Xijinping extends Actor
     // ===== STATE =====
     String direction = "idle";
     String state = "move";
+    
+    // ===== STATE DURATIONS =====
+    int moveDuration = 4000;   // 4 seconds NOT shooting
+    int shootDuration = 1500; // 1.5 seconds shooting
 
     int speed = 4;
 
@@ -83,14 +87,22 @@ public class Xijinping extends Actor
         if (state.equals("move"))
         {
             moveTowardHero();
+            
+             // stay in move longer
+            if (stateTimer.millisElapsed() > moveDuration)
+            {
+                state = "pause";   // shooting state
+                stateTimer.mark();
+            }
         }
         else
         {
             autoShoot();
-            if (stateTimer.millisElapsed() > 2000)
+
+            if (stateTimer.millisElapsed() > shootDuration)
             {
-                stateTimer.mark();
                 state = "move";
+                stateTimer.mark();
             }
         }
     }
@@ -142,6 +154,8 @@ public class Xijinping extends Actor
     // ================= DAMAGE =================
     private void checkHeroAttack()
     {
+        if (!state.equals("move")) return;
+        
         if (getWorld().getObjects(Hero.class).isEmpty()) return;
         Hero hero = getWorld().getObjects(Hero.class).get(0);
 
